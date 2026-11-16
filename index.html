@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LigaSim Argentina — Simulador de la Liga Profesional</title>
+  <meta name="description" content="Simulá la Liga Profesional Argentina 2026: 30 clubes, fixture completo, tabla de posiciones, goleadores y playoffs. Gratis y sin registro.">
+  <meta name="theme-color" content="#050505">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#simulador" aria-label="LigaSim Argentina, ir al simulador">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#0a0906" stroke-width="1.5"/>
+            <path d="M12 7.2l3.4 2.5-1.3 4h-4.2l-1.3-4L12 7.2Z" fill="#0a0906"/>
+            <path d="M12 3v4.2M4.2 9.4l3.4 2.4M6.1 19l3.8-2.9M17.9 19l-3.8-2.9M19.8 9.4l-3.4 2.4" stroke="#0a0906" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-copy">
+          <strong>Liga<span>Sim</span></strong>
+          <small>Argentina</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Secciones">
+        <a href="#simulador" data-nav="simulador" class="is-active">Simulador</a>
+        <a href="#fixture" data-nav="fixture">Fixture</a>
+        <a href="#tabla" data-nav="tabla">Tabla</a>
+        <a href="#playoffs" data-nav="playoffs">Playoffs</a>
+        <a href="#equipos" data-nav="equipos">Equipos</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <select id="tournament-select" class="select" aria-label="Elegir torneo"></select>
+        <button type="button" id="theme-toggle" class="icon-btn" aria-label="Cambiar tema" title="Cambiar tema"></button>
+        <button type="button" id="settings-btn" class="icon-btn" aria-label="Ajustes" title="Ajustes">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    <!-- ============================ SIMULADOR ============================ -->
+    <section id="view-simulador" class="view">
+      <div class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow" id="hero-eyebrow">Simulador · Temporada 2026</span>
+          <h1>Simulá la <em>Liga Argentina</em> como nunca antes</h1>
+          <p class="hero-sub">30 clubes, 15 fechas y una fase final. Elegí un torneo, simulá partido a partido y descubrí quién levanta la copa.</p>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-primary" id="hero-sim-btn" data-action="hero-primary">Simular fecha 1</button>
+            <button type="button" class="btn btn-ghost" id="hero-season-btn" data-action="sim-season">Simular temporada</button>
+          </div>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-halo"></div>
+          <div class="hero-ring hero-ring--1"></div>
+          <div class="hero-ring hero-ring--2"></div>
+          <svg class="hero-ball" viewBox="0 0 400 400">
+            <defs>
+              <radialGradient id="ballGold" cx="34%" cy="26%" r="78%">
+                <stop offset="0%" stop-color="#fff6cf"/>
+                <stop offset="28%" stop-color="#f4cf68"/>
+                <stop offset="62%" stop-color="#c9a84c"/>
+                <stop offset="100%" stop-color="#6b5216"/>
+              </radialGradient>
+              <radialGradient id="ballShade" cx="50%" cy="50%" r="50%">
+                <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#000" stop-opacity=".55"/>
+              </radialGradient>
+              <filter id="ballBlur" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="18"/>
+              </filter>
+              <clipPath id="ballClip">
+                <circle cx="200" cy="200" r="150"/>
+              </clipPath>
+            </defs>
+            <circle cx="200" cy="200" r="168" fill="#c9a84c" opacity=".18" filter="url(#ballBlur)"/>
+            <circle cx="200" cy="200" r="150" fill="url(#ballGold)"/>
+            <g clip-path="url(#ballClip)">
+              <g fill="#1a1408" opacity=".62">
+                <polygon points="200,148 249.5,183.9 230.6,242.1 169.4,242.1 150.5,183.9"/>
+                <polygon points="200,46 234.2,70.9 221.1,111.4 178.9,111.4 165.8,70.9"/>
+                <polygon points="312.2,127.5 346.4,152.4 333.3,192.9 291.1,192.9 278,152.4"/>
+                <polygon points="269.4,259.5 303.6,284.4 290.5,324.9 248.3,324.9 235.2,284.4"/>
+                <polygon points="130.6,259.5 164.8,284.4 151.7,324.9 109.5,324.9 96.4,284.4"/>
+                <polygon points="87.8,127.5 122,152.4 108.9,192.9 66.7,192.9 53.6,152.4"/>
+              </g>
+              <g stroke="#1a1408" stroke-opacity=".42" stroke-width="3" fill="none" stroke-linecap="round">
+                <path d="M200 148 L200 111"/>
+                <path d="M249.5 183.9 L278 152.4"/>
+                <path d="M230.6 242.1 L248.3 284.4"/>
+                <path d="M169.4 242.1 L151.7 284.4"/>
+                <path d="M150.5 183.9 L122 152.4"/>
+              </g>
+            </g>
+            <circle cx="200" cy="200" r="150" fill="url(#ballShade)"/>
+            <ellipse cx="152" cy="118" rx="48" ry="29" fill="#fff" opacity=".22" transform="rotate(-32 152 118)"/>
+          </svg>
+        </div>
+      </div>
+
+      <h2 class="sr-only">Resumen del torneo</h2>
+
+      <div id="champion-banner"></div>
+
+      <div class="dashboard-grid">
+        <div class="dash-main" id="dash-matches"></div>
+        <aside class="dash-side">
+          <div class="dash-tables" id="dash-tables"></div>
+          <div id="dash-scorers"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============================= FIXTURE ============================= -->
+    <section id="view-fixture" class="view" hidden>
+      <div class="page-head">
+        <span class="eyebrow">Calendario</span>
+        <h2>Fixture y resultados</h2>
+        <p>Recorré las fechas, simulá una jornada completa o partido por partido. Los resultados quedan guardados automáticamente.</p>
+      </div>
+      <div id="fixture-content"></div>
+    </section>
+
+    <!-- ============================== TABLA ============================== -->
+    <section id="view-tabla" class="view" hidden>
+      <div class="page-head">
+        <span class="eyebrow">Estadísticas</span>
+        <h2>Tabla de posiciones</h2>
+        <p>Puntos, diferencia de gol y los últimos cinco resultados de cada club. Los primeros de cada zona avanzan a los playoffs.</p>
+      </div>
+      <div id="standings-content"></div>
+    </section>
+
+    <!-- ============================= PLAYOFFS =========================== -->
+    <section id="view-playoffs" class="view" hidden>
+      <div class="page-head">
+        <span class="eyebrow">Fase final</span>
+        <h2>Playoffs</h2>
+        <p>Partidos únicos: si hay empate se define por penales. El bracket se arma automáticamente cuando termina la fase regular.</p>
+      </div>
+      <div id="playoffs-content"></div>
+    </section>
+
+    <!-- ============================= EQUIPOS ============================= -->
+    <section id="view-equipos" class="view" hidden>
+      <div class="page-head">
+        <span class="eyebrow">Clubes</span>
+        <h2>Equipos</h2>
+        <p>Ajustá nombres, ciudades, estadios, colores y la fuerza de cada club. Los cambios se aplican a las próximas simulaciones.</p>
+      </div>
+      <div id="teams-content"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark brand-mark--sm" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#0a0906" stroke-width="1.5"/>
+            <path d="M12 7.2l3.4 2.5-1.3 4h-4.2l-1.3-4L12 7.2Z" fill="#0a0906"/>
+          </svg>
+        </span>
+        <div>
+          <b>LigaSim Argentina</b>
+          <p id="footer-tournament">Liga Profesional Argentina 2026</p>
+        </div>
+      </div>
+      <p class="footer-note">Simulador no oficial · Planteles y resultados ficticios · © <span id="footer-year">2026</span></p>
+    </div>
+  </footer>
+
+  <input type="file" id="import-input" accept="application/json,.json" hidden>
+
+  <div id="toast-root" aria-live="polite"></div>
+  <div id="modal-root"></div>
+  <div id="confetti-root" aria-hidden="true"></div>
+
+  <script src="js/core/rng.js"></script>
+  <script src="js/data/teams.js"></script>
+  <script src="js/data/tournaments.js"></script>
+  <script src="js/data/players.js"></script>
+  <script src="js/core/fixtures.js"></script>
+  <script src="js/core/simulator.js"></script>
+  <script src="js/core/standings.js"></script>
+  <script src="js/core/playoffs.js"></script>
+  <script src="js/core/storage.js"></script>
+  <script src="js/ui/dom.js"></script>
+  <script src="js/ui/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
