@@ -61,6 +61,18 @@
     const colors = team.colors || [];
     const c1 = safeColor(colors[0], '#333333');
     const c2 = safeColor(colors[1], '#111111');
+
+    // Si el equipo tiene escudo original definido, usá la imagen.
+    // Los archivos van en img/escudos/<id>.png (o .svg/.jpg).
+    const shield = team.shield ? 'img/escudos/' + team.shield : null;
+
+    if (shield) {
+      return '<img class="badge ' + (extraClass || '') + '" src="' + shield +
+        '" alt="' + esc(team.name) + '" title="' + esc(team.name) +
+        '" width="32" height="32" loading="lazy">';
+    }
+
+    // Fallback: escudo genérico con sigla y colores (CSS)
     return '<span class="badge ' + (extraClass || '') + '" style="--c1:' + c1 +
       ';--c2:' + c2 + ';--badge-text:' + contrastText(c1) +
       '" title="' + esc(team.name) + '"><span>' + esc(team.short) + '</span></span>';

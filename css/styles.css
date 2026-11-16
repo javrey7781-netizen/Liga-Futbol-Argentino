@@ -491,6 +491,16 @@ h1 em {
 .badge--xl { width: 76px; height: 76px; font-size: 17px; border-width: 2px; }
 .badge--xl span { transform: translateY(-6px); }
 
+/* Escudos originales (imágenes) */
+img.badge {
+  width: 32px; height: 32px; object-fit: contain; border-radius: 6px;
+  border: 1px solid var(--border-soft); background: var(--bg2);
+  flex: 0 0 auto;
+}
+img.badge--xs { width: 22px; height: 22px; }
+img.badge--lg { width: 52px; height: 52px; }
+img.badge--xl { width: 76px; height: 76px; }
+
 /* ------------------------------- Tablas ---------------------------- */
 .table-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
 .standings { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 560px; }

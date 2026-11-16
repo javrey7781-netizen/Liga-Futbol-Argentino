@@ -1,0 +1,8 @@
+# Carpeta de escudos originales
+# Colocá acá las imágenes de los escudos de cada equipo:
+#   river-plate.png, boca-juniors.png, racing-club.png, etc.
+# El nombre del archivo debe coincidir con el id del equipo en js/data/teams.js.
+# Formatos soportados: .png, .svg, .jpg, .webp
+# Tamaño recomendado: 512x512 px o mayor (se escala automáticamente a 32px).
+#
+# Si no colocás una imagen para un equipo, se muestra el escudo genérico (sigla + colores).
