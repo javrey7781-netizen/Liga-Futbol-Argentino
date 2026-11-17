@@ -584,6 +584,17 @@ img.badge--xl { width: 76px; height: 76px; }
 .relegation-table tr.is-relegated { background: rgba(229, 72, 77, .10); }
 .relegation-table tr.is-relegated td:first-child { box-shadow: inset 2px 0 0 #e5484d; }
 
+/* ---------------------- Tabla Anual ---------------------- */
+.champions-card { margin-top: 22px; }
+.champions-row { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; }
+.champ-item { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
+.champ-badge { flex: 0 0 auto; }
+.champ-name { font-size: 13px; font-weight: 800; color: var(--text); }
+.champ-sub { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text2); margin-top: 2px; }
+
+/* Ajuste para tabla anual en la tabla de posiciones */
+.cups-grid { margin-bottom: 14px; }
+
 @media (max-width: 980px) {
   .cups-grid { grid-template-columns: 1fr; }
 }

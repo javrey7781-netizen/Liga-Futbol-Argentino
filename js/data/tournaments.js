@@ -97,11 +97,13 @@
       playoffs: {
         enabled: true,
         teamsPerGroup: 8,
-        neutralFinal: true
+        neutralFinal: true,
+        // Localía: octavos y cuartos = cancha del mejor ubicado; semifinales y final = neutral
+        neutralRounds: ['semifinales', 'final']
       },
       internationalCups: {
-        libertadores: 2,
-        sudamericana: 4
+        libertadores: 6,
+        sudamericana: 6
       },
       relegation: {
         enabled: true,

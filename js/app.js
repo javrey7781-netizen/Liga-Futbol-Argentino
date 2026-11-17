@@ -38,7 +38,9 @@
       tournamentHistory: [],
       copaResults: {},
       copaBracket: null,
-      copaChampion: null
+      copaChampion: null,
+      tableAnnual: [],
+      semesterChampions: {}
     };
   }
 
@@ -128,6 +130,10 @@
         LAS.dom.confetti(120);
         LAS.dom.toast('¡' + champion.name + ' es el campeón!', 'success');
 
+        // Guardar campeón del semestre
+        state.semesterChampions = state.semesterChampions || {};
+        state.semesterChampions[state.tournamentId] = state.playoffs.champion;
+
         // Guardar historial de la temporada para promedios y descensos
         const ctx = buildContext();
         const seasonTeams = {};
@@ -135,14 +141,37 @@
           group.rows.forEach((row) => {
             seasonTeams[row.teamId] = {
               pts: row.pts,
-              pj: row.pj
+              pj: row.pj,
+              dg: row.dg,
+              gf: row.gf,
+              gc: row.gc,
+              pg: row.pg,
+              pe: row.pe,
+              pp: row.pp
             };
           });
         });
         state.tournamentHistory.push({
           season: ctx.tournament.season,
+          tournamentId: state.tournamentId,
           teams: seasonTeams
         });
+
+        // Acumular tabla anual si ya se jugaron ambos semestres
+        const Apertura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-apertura-2026');
+        const Clausura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-clausura-2026');
+        if (Apertura && Clausura) {
+          const toRows = (teamsObj) => {
+            if (!teamsObj) return [];
+            return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
+          };
+          const semesters = [
+            { season: 'Apertura', groups: [{ rows: toRows(Apertura.teams) }] },
+            { season: 'Clausura', groups: [{ rows: toRows(Clausura.teams) }] }
+          ];
+          state.tableAnnual = LAS.standings.computeTableAnnual(semesters);
+        }
+
         LAS.storage.save(state);
       }
       refresh({ animate: animatedIds || [] });
@@ -727,7 +756,14 @@
     try {
       const overrides = state.teams;
       const theme = state.theme;
+      // Preservar tabla anual, campeones e historial entre semestres
+      const prevTableAnnual = state.tableAnnual || [];
+      const prevSemesterChampions = state.semesterChampions || {};
+      const prevTournamentHistory = state.tournamentHistory || [];
       state = createState(tournamentId, theme, overrides);
+      state.tableAnnual = prevTableAnnual;
+      state.semesterChampions = prevSemesterChampions;
+      state.tournamentHistory = prevTournamentHistory;
       uiState.fixtureRound = null;
       uiState.teamsQuery = '';
       applyTheme(theme);
@@ -1057,7 +1093,7 @@
   }
 
   /* ------------------------------ Ruteo ----------------------------- */
-  const VIEWS = ['simulador', 'fixture', 'tabla', 'playoffs', 'copa', 'equipos'];
+  const VIEWS = ['simulador', 'fixture', 'tabla', 'tabla-anual', 'playoffs', 'copa', 'equipos'];
 
   function route() {
     try {

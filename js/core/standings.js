@@ -151,52 +151,126 @@
     });
   }
 
-  /* ----------------------- Copas internacionales ----------------------- */
-  function computeInternationalCups(state, tournament, standings) {
-    const cups = tournament.internationalCups;
-    if (!cups) return { libertadores: [], sudamericana: [] };
+  /* ----------------------- Tabla Anual ----------------------- */
+  /* Suma los puntos de Apertura + Clausura para la tabla acumulada del año.
+     standings debe ser un array con los resultados de cada semestre. */
+  function computeTableAnnual(semestersStandings) {
+    const teamMap = new Map();
 
-    const championId = state.playoffs && state.playoffs.champion;
-
-    // Combinar todas las filas de todos los grupos en una tabla anual
-    const allRows = [];
-    standings.forEach((group) => {
-      group.rows.forEach((row) => {
-        allRows.push({ ...row, groupIndex: group.index });
+    semestersStandings.forEach((semester) => {
+      semester.groups.forEach((group) => {
+        group.rows.forEach((row) => {
+          if (!teamMap.has(row.teamId)) {
+            teamMap.set(row.teamId, {
+              teamId: row.teamId,
+              pts: 0,
+              pj: 0,
+              pg: 0,
+              pe: 0,
+              pp: 0,
+              gf: 0,
+              gc: 0,
+              semesters: []
+            });
+          }
+          const t = teamMap.get(row.teamId);
+          t.pts += row.pts;
+          t.pj += row.pj;
+          t.pg += row.pg;
+          t.pe += row.pe;
+          t.pp += row.pp;
+          t.gf += row.gf;
+          t.gc += row.gc;
+          t.semesters.push({ season: semester.season, pts: row.pts, pj: row.pj });
+        });
       });
     });
 
-    // Ordenar por puntos, DG, GF (tabla anual)
-    allRows.sort((a, b) =>
+    const rows = Array.from(teamMap.values());
+    rows.forEach((row) => {
+      row.dg = row.gf - row.gc;
+    });
+
+    rows.sort((a, b) =>
       b.pts - a.pts ||
       b.dg - a.dg ||
       b.gf - a.gf ||
+      b.pg - a.pg ||
       a.teamId.localeCompare(b.teamId)
     );
 
+    rows.forEach((row, index) => {
+      row.rank = index + 1;
+    });
+
+    return rows;
+  }
+
+  /* ----------------------- Copas internacionales (CONMEBOL) ----------------------- */
+  /* Clasificación según reglamento argentino:
+     Libertadores (6 cupos):
+       Cupo 1: Campeón Apertura (Fase de Grupos)
+       Cupo 2: Campeón Clausura (Fase de Grupos)
+       Cupo 3: Campeón Copa Argentina (Fase de Grupos)
+       Cupos 4-5: Los 2 mejores de Tabla Anual que no sean campeones (Fase de Grupos)
+       Cupo 6: 3° mejor de Tabla Anual (Fase 2 / Repechaje)
+     Sudamericana (6 cupos):
+       Los 6 mejores de Tabla Anual (puesto 4° al 9° general) no ya en Libertadores
+     Desborde: si un campeón ocupa puesto alto en Tabla Anual, libera su cupo y corre al siguiente.
+  */
+  function computeInternationalCups(tableAnnual, champions) {
+    const cups = { libertadores: 6, sudamericana: 6 };
     const libertadores = [];
     const sudamericana = [];
+    const qualified = new Set();
 
-    // El campeón de playoffs va a Libertadores (cupo 1)
-    if (championId) {
-      libertadores.push({ teamId: championId, reason: 'Campeón' });
-    }
+    // Función auxiliar para agregar a Libertadores
+    const addLib = (teamId, reason) => {
+      if (teamId && !qualified.has(teamId) && libertadores.length < cups.libertadores) {
+        libertadores.push({ teamId, reason });
+        qualified.add(teamId);
+      }
+    };
 
-    // Llenar cupos restantes de Libertadores con los mejores de la tabla anual
-    let libRemaining = cups.libertadores - libertadores.length;
-    let sudRemaining = cups.sudamericana;
+    // Función auxiliar para agregar a Sudamericana
+    const addSud = (teamId, reason) => {
+      if (teamId && !qualified.has(teamId) && sudamericana.length < cups.sudamericana) {
+        sudamericana.push({ teamId, reason });
+        qualified.add(teamId);
+      }
+    };
 
-    for (const row of allRows) {
-      if (libertadores.some((l) => l.teamId === row.teamId)) continue;
-      if (libRemaining > 0) {
-        libertadores.push({ teamId: row.teamId, reason: 'Tabla anual' });
-        libRemaining--;
-      } else if (sudRemaining > 0) {
-        sudamericana.push({ teamId: row.teamId, reason: 'Tabla anual' });
-        sudRemaining--;
+    // Cupo 1: Campeón Apertura
+    if (champions.apertura) addLib(champions.apertura, 'Campeón Apertura');
+
+    // Cupo 2: Campeón Clausura
+    if (champions.clausura) addLib(champions.clausura, 'Campeón Clausura');
+
+    // Cupo 3: Campeón Copa Argentina
+    if (champions.copaArgentina) addLib(champions.copaArgentina, 'Campeón Copa Argentina');
+
+    // Cupos 4-5: 2 mejores de Tabla Anual que no sean campeones
+    // Cupo 6: 3° mejor de Tabla Anual (Fase 2 / Repechaje)
+    let libFromTable = 0;
+    for (const row of tableAnnual) {
+      if (qualified.has(row.teamId)) continue;
+      if (libFromTable < 2) {
+        addLib(row.teamId, 'Tabla anual (Fase de Grupos)');
+        libFromTable++;
+      } else if (libFromTable === 2) {
+        addLib(row.teamId, 'Tabla anual (Fase 2 / Repechaje)');
+        libFromTable++;
       } else {
         break;
       }
+    }
+
+    // Sudamericana: 6 mejores de Tabla Anual no ya en Libertadores
+    // (del puesto 4° al 9° de la general acumulada, desbordando si es necesario)
+    for (const row of tableAnnual) {
+      if (qualified.has(row.teamId)) continue;
+      addSud(row.teamId, 'Tabla anual');
+      if (sudamericana.length >= cups.sudamericana) break;
     }
 
     return { libertadores, sudamericana };
@@ -244,5 +318,5 @@
     };
   }
 
-  LAS.standings = { compute, computeInternationalCups, computeRelegation };
+  LAS.standings = { compute, computeInternationalCups, computeRelegation, computeTableAnnual };
 })();

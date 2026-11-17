@@ -242,7 +242,9 @@
       tournamentHistory: Array.isArray(data.tournamentHistory) ? data.tournamentHistory : [],
       copaResults: data.copaResults || {},
       copaBracket: data.copaBracket || null,
-      copaChampion: data.copaChampion || null
+      copaChampion: data.copaChampion || null,
+      tableAnnual: Array.isArray(data.tableAnnual) ? data.tableAnnual : [],
+      semesterChampions: data.semesterChampions || {}
     };
   }
 

@@ -65,15 +65,22 @@
     return pairs;
   }
 
-  function roundName(teamCount) {
-    if (teamCount >= 8) return 'Cuartos de final';
-    if (teamCount === 4) return 'Semifinales';
+  function roundName(matchCount) {
+    if (matchCount >= 8) return 'Octavos de final';
+    if (matchCount === 4) return 'Cuartos de final';
+    if (matchCount === 2) return 'Semifinales';
     return 'Final';
+  }
+
+  function isNeutralRound(roundName, tournament) {
+    const neutralRounds = (tournament.playoffs && tournament.playoffs.neutralRounds) || [];
+    return neutralRounds.includes(roundName.toLowerCase());
   }
 
   function create(state, tournament, standings) {
     const groups = qualifiers(standings, tournament.playoffs.teamsPerGroup);
     const pairs = buildPairs(groups).filter((pair) => pair[0] && pair[1]);
+    const matchCount = pairs.length;
 
     const matches = pairs.map((pair, index) => {
       const a = pair[0];
@@ -81,6 +88,7 @@
       const swap = a.rank > b.rank;
       const home = swap ? b : a;
       const away = swap ? a : b;
+      const rndName = roundName(matchCount);
       return {
         id: 'po-0-' + index,
         roundIndex: 0,
@@ -90,13 +98,13 @@
         awayLabel: away.label,
         homeRank: home.rank,
         awayRank: away.rank,
-        neutral: false,
+        neutral: isNeutralRound(rndName, tournament),
         isFinal: false
       };
     });
 
     return {
-      rounds: [{ name: roundName(matches.length * 2), matches }],
+      rounds: [{ name: roundName(matchCount), matches }],
       champion: null,
       createdAt: Date.now()
     };
@@ -137,6 +145,7 @@
         const swap = a.rank > b.rank;
         const home = swap ? b : a;
         const away = swap ? a : b;
+        const rndName = roundName(nextMatches.length + 1);
         nextMatches.push({
           id: 'po-' + playoffs.rounds.length + '-' + (i / 2),
           roundIndex: playoffs.rounds.length,
@@ -146,18 +155,18 @@
           awayLabel: away.label,
           homeRank: home.rank,
           awayRank: away.rank,
-          neutral: false,
+          neutral: isNeutralRound(rndName, tournament),
           isFinal: false
         });
       }
 
       if (nextMatches.length === 1) {
         nextMatches[0].isFinal = true;
-        nextMatches[0].neutral = !!(tournament.playoffs && tournament.playoffs.neutralFinal);
+        nextMatches[0].neutral = isNeutralRound('Final', tournament);
       }
 
       playoffs.rounds.push({
-        name: roundName(nextMatches.length * 2),
+        name: roundName(nextMatches.length),
         matches: nextMatches
       });
     }

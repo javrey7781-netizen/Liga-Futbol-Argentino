@@ -389,7 +389,14 @@
       const container = document.getElementById('standings-content');
       if (!container) return;
 
-      const cups = LAS.standings.computeInternationalCups(ctx.state, ctx.tournament, ctx.standings);
+      const tableAnnual = ctx.state.tableAnnual || [];
+      const rawChampions = ctx.state.semesterChampions || {};
+      const champions = {
+        apertura: rawChampions['liga-apertura-2026'],
+        clausura: rawChampions['liga-clausura-2026'],
+        copaArgentina: ctx.state.copaChampion
+      };
+      const cups = LAS.standings.computeInternationalCups(tableAnnual, champions);
       const libSet = new Set(cups.libertadores.map((c) => c.teamId));
       const sudSet = new Set(cups.sudamericana.map((c) => c.teamId));
 
@@ -676,6 +683,121 @@
 
   /* ----------------------------- Equipos ---------------------------- */
   /* ---------------------------- Copa Argentina ---------------------------- */
+  /* ---------------------------- Tabla Anual ---------------------------- */
+  function renderTableAnnual(ctx) {
+    try {
+      const container = document.getElementById('table-annual-content');
+      if (!container) return;
+
+      const tableAnnual = ctx.state.tableAnnual || [];
+      const champions = {
+        apertura: (ctx.state.semesterChampions || {})['liga-apertura-2026'],
+        clausura: (ctx.state.semesterChampions || {})['liga-clausura-2026'],
+        copaArgentina: ctx.state.copaChampion
+      };
+      const cups = LAS.standings.computeInternationalCups(tableAnnual, champions);
+      const libSet = new Set(cups.libertadores.map((c) => c.teamId));
+      const sudSet = new Set(cups.sudamericana.map((c) => c.teamId));
+
+      const hasData = tableAnnual.length > 0;
+
+      if (!hasData) {
+        container.innerHTML = '<section class="card empty-state">' +
+          '<div class="empty-icon">' + icon('trophy', 42) + '</div>' +
+          '<h3>Tabla Anual aún no disponible</h3>' +
+          '<p>Simulá tanto el Apertura como el Clausura para generar la tabla anual acumulada.</p>' +
+          '</section>';
+        return;
+      }
+
+      const libRows = cups.libertadores.map((c, i) => {
+        const team = resolve(ctx, c.teamId);
+        const row = tableAnnual.find((r) => r.teamId === c.teamId);
+        return '<tr>' +
+          '<td class="pos">' + (i + 1) + '</td>' +
+          '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
+          '<td>' + (row ? row.pts : '-') + '</td>' +
+          '<td>' + (row ? row.dg : '-') + '</td>' +
+          '<td class="pts cup-reason">' + c.reason + '</td>' +
+        '</tr>';
+      }).join('');
+
+      const sudRows = cups.sudamericana.map((c, i) => {
+        const team = resolve(ctx, c.teamId);
+        const row = tableAnnual.find((r) => r.teamId === c.teamId);
+        return '<tr>' +
+          '<td class="pos">' + (i + 1) + '</td>' +
+          '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
+          '<td>' + (row ? row.pts : '-') + '</td>' +
+          '<td>' + (row ? row.dg : '-') + '</td>' +
+          '<td class="pts cup-reason">' + c.reason + '</td>' +
+        '</tr>';
+      }).join('');
+
+      const allRows = tableAnnual.map((row, index) => {
+        const team = resolve(ctx, row.teamId);
+        const inLib = libSet.has(row.teamId);
+        const inSud = sudSet.has(row.teamId);
+        let cupStatus = '';
+        if (inLib) cupStatus = '<span class="cup cup--lib">L</span>';
+        else if (inSud) cupStatus = '<span class="cup cup--sud">S</span>';
+        return '<tr>' +
+          '<td class="pos">' + row.rank + '</td>' +
+          '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span>' + cupStatus + '</td>' +
+          '<td>' + row.pj + '</td>' +
+          '<td>' + row.pg + '</td>' +
+          '<td>' + row.pe + '</td>' +
+          '<td>' + row.pp + '</td>' +
+          '<td>' + row.gf + '</td>' +
+          '<td>' + row.gc + '</td>' +
+          '<td>' + (row.dg > 0 ? '+' : '') + row.dg + '</td>' +
+          '<td class="pts">' + row.pts + '</td>' +
+        '</tr>';
+      }).join('');
+
+      const champA = champions.apertura ? resolve(ctx, champions.apertura) : null;
+      const champC = champions.clausura ? resolve(ctx, champions.clausura) : null;
+
+      container.innerHTML =
+        '<div class="cups-grid">' +
+        '<div class="cup-group cup-group--lib">' +
+          '<h4>' + icon('trophy', 16) + ' Copa Libertadores</h4>' +
+          '<div class="table-wrap"><table class="standings cups-table">' +
+          '<thead><tr><th>#</th><th>Equipo</th><th>Pts</th><th>DIF</th><th>Vía</th></tr></thead>' +
+          '<tbody>' + libRows + '</tbody>' +
+          '</table></div>' +
+        '</div>' +
+        '<div class="cup-group cup-group--sud">' +
+          '<h4>' + icon('trophy', 16) + ' Copa Sudamericana</h4>' +
+          '<div class="table-wrap"><table class="standings cups-table">' +
+          '<thead><tr><th>#</th><th>Equipo</th><th>Pts</th><th>DIF</th><th>Vía</th></tr></thead>' +
+          '<tbody>' + sudRows + '</tbody>' +
+          '</table></div>' +
+        '</div>' +
+        '</div>' +
+
+        '<section class="card relegation-card" style="margin-top:22px">' +
+          '<div class="card-head"><div><span class="eyebrow">Tabla Anual Acumulada</span><h3>Posiciones del Año</h3></div>' +
+          '<span class="pill">' + tableAnnual.length + ' equipos</span></div>' +
+          '<div class="table-wrap"><table class="standings relegation-table">' +
+          '<thead><tr><th>#</th><th>Equipo</th><th>Copas</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead>' +
+          '<tbody>' + allRows + '</tbody>' +
+          '</table></div>' +
+        '</section>' +
+
+        (champA || champC ? '<section class="card champions-card" style="margin-top:22px">' +
+          '<div class="card-head"><div><span class="eyebrow">Campeones Semestrales</span><h3>Títulos 2026</h3></div>' +
+          '<div class="champions-row">' +
+          (champA ? '<div class="champ-item"><div class="champ-badge">' + badge(champA, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champA.name) + '</div><div class="champ-sub">Campeón Apertura 2026</div></div></div>' : '') +
+          (champC ? '<div class="champ-item"><div class="champ-badge">' + badge(champC, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champC.name) + '</div><div class="champ-sub">Campeón Clausura 2026</div></div></div>' : '') +
+          '</div>' +
+        '</section>' : '');
+    } catch (error) {
+      console.error('Error renderizando tabla anual:', error);
+      container.innerHTML = '<section class="card empty-state"><h3>Error renderizando tabla anual</h3><p>' + esc(error.message) + '</p></section>';
+    }
+  }
+
   function renderCopa(ctx) {
     try {
       const container = document.getElementById('copa-content');
@@ -861,6 +983,7 @@
     renderStandings(ctx);
     renderPlayoffs(ctx);
     renderCopa(ctx);
+    renderTableAnnual(ctx);
     renderTeams(ctx);
     renderFooter(ctx);
   }
