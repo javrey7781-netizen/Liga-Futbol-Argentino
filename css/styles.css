@@ -567,6 +567,22 @@ img.badge--xl { width: 76px; height: 76px; }
 }
 .cup--lib { background: #1e9e4e; color: #fff; }
 .cup--sud { background: #4c8dff; color: #fff; }
+.cup--desc { background: #e5484d; color: #fff; }
+
+/* ---------------------- Promedios y descensos ---------------------- */
+.relegation-card { margin-top: 22px; }
+.relegation-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 0; }
+.relegation-table th {
+  padding: 7px 6px; font-size: 8px; font-weight: 900; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3); text-align: center;
+  border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+.relegation-table th:nth-child(2) { text-align: left; }
+.relegation-table td { padding: 8px 6px; text-align: center; color: var(--text2); border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+.relegation-table td:nth-child(2) { text-align: left; font-weight: 700; color: var(--text); }
+.relegation-table .pos { font-weight: 900; color: var(--text2); width: 26px; }
+.relegation-table tr.is-relegated { background: rgba(229, 72, 77, .10); }
+.relegation-table tr.is-relegated td:first-child { box-shadow: inset 2px 0 0 #e5484d; }
 
 @media (max-width: 980px) {
   .cups-grid { grid-template-columns: 1fr; }

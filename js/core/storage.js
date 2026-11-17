@@ -238,7 +238,8 @@
       teams: sanitizeTeams(data.teams),
       results,
       playoffs,
-      celebrated: !!data.celebrated
+      celebrated: !!data.celebrated,
+      tournamentHistory: Array.isArray(data.tournamentHistory) ? data.tournamentHistory : []
     };
   }
 

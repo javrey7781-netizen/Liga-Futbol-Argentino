@@ -57,6 +57,11 @@
         libertadores: 6,
         sudamericana: 6
       },
+      relegation: {
+        enabled: true,
+        teams: 2,
+        years: 3
+      },
       ui: {
         roundLabel: 'Fecha',
         qualificationLabel: 'Playoffs'
@@ -83,6 +88,11 @@
       internationalCups: {
         libertadores: 6,
         sudamericana: 6
+      },
+      relegation: {
+        enabled: true,
+        teams: 2,
+        years: 3
       },
       ui: {
         roundLabel: 'Fecha',

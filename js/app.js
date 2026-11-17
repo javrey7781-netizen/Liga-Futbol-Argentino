@@ -34,7 +34,8 @@
       teams: overrides || {},
       results: {},
       playoffs: null,
-      celebrated: false
+      celebrated: false,
+      tournamentHistory: []
     };
   }
 
@@ -74,6 +75,30 @@
         delete autoSaveTimers[id];
       });
       ctx = buildContext();
+
+      // Asegurar historial de temporada para promedios/descensos
+      // (por si se carga una temporada ya finalizada desde storage)
+      if (
+        ctx.playoffs &&
+        ctx.playoffs.champion &&
+        !state.tournamentHistory.some((h) => h.season === ctx.tournament.season)
+      ) {
+        const seasonTeams = {};
+        ctx.standings.forEach((group) => {
+          group.rows.forEach((row) => {
+            seasonTeams[row.teamId] = {
+              pts: row.pts,
+              pj: row.pj
+            };
+          });
+        });
+        state.tournamentHistory.push({
+          season: ctx.tournament.season,
+          teams: seasonTeams
+        });
+        LAS.storage.save(state);
+      }
+
       LAS.storage.save(state);
       LAS.render.render(ctx);
       if (options && options.animate && options.animate.length) {
@@ -99,6 +124,23 @@
         const champion = LAS.resolveTeam(state, state.playoffs.champion);
         LAS.dom.confetti(120);
         LAS.dom.toast('¡' + champion.name + ' es el campeón!', 'success');
+
+        // Guardar historial de la temporada para promedios y descensos
+        const ctx = buildContext();
+        const seasonTeams = {};
+        ctx.standings.forEach((group) => {
+          group.rows.forEach((row) => {
+            seasonTeams[row.teamId] = {
+              pts: row.pts,
+              pj: row.pj
+            };
+          });
+        });
+        state.tournamentHistory.push({
+          season: ctx.tournament.season,
+          teams: seasonTeams
+        });
+        LAS.storage.save(state);
       }
       refresh({ animate: animatedIds || [] });
     } catch (error) {

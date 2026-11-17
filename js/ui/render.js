@@ -439,10 +439,12 @@
       }).join('');
 
       const cupsSection = cupsSectionHtml(ctx, cups);
+      const relegationSection = renderRelegationHtml(ctx, cups);
 
       container.innerHTML =
         '<div class="standings-grid ' + (ctx.standings.length === 1 ? 'is-single' : '') + '">' + tables + '</div>' +
         cupsSection +
+        relegationSection +
         '<section class="card scorers-card">' +
           '<div class="card-head"><div><span class="eyebrow">Goleadores</span><h3>Tabla de artilleros</h3></div>' +
           '<span class="pill">' + scorers.length + ' jugadores</span></div>' +
@@ -497,6 +499,38 @@
         '</table></div>' +
       '</div>' +
       '</div>' +
+    '</section>';
+  }
+
+  function renderRelegationHtml(ctx, cups) {
+    const rel = ctx.tournament.relegation;
+    if (!rel || !rel.enabled) return '';
+
+    const relegation = LAS.standings.computeRelegation(ctx.state, ctx.tournament, ctx.standings);
+    if (!relegation || !relegation.teams.length) return '';
+
+    const desc = new Set(relegation.teams.map((t) => t.teamId));
+
+    const rows = relegation.allAverages.map((r) => {
+      const team = resolve(ctx, r.teamId);
+      const willDescend = desc.has(r.teamId);
+      return '<tr class="' + (willDescend ? 'is-relegated' : '') + '">' +
+        '<td class="pos">' + (r.pts === 0 && r.pj === 0 ? '—' : relegation.allAverages.indexOf(r) + 1) + '</td>' +
+        '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span>' +
+        (willDescend ? '<span class="cup cup--desc">D</span>' : '') + '</td>' +
+        '<td>' + r.pj + '</td>' +
+        '<td>' + r.pts + '</td>' +
+        '<td class="pts">' + r.avg.toFixed(3) + '</td>' +
+      '</tr>';
+    }).join('');
+
+    return '<section class="card relegation-card">' +
+      '<div class="card-head"><div><span class="eyebrow">Promedios y descensos</span><h3>Tabla de promedios (últimos ' + rel.years + ' años)</h3></div>' +
+      '<span class="pill">' + rel.teams.length + ' descienden</span></div>' +
+      '<div class="table-wrap"><table class="standings relegation-table">' +
+      '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>Pts</th><th>Promedio</th><th>Estado</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '</table></div>' +
     '</section>';
   }
 

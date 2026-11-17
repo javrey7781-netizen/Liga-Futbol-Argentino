@@ -151,5 +151,47 @@
     return { libertadores, sudamericana };
   }
 
-  LAS.standings = { compute, computeInternationalCups };
+  /* ----------------------- Promedios y descensos ----------------------- */
+  function computeRelegation(state, tournament, standings) {
+    const rel = tournament.relegation;
+    if (!rel || !rel.enabled) return { teams: [], history: [] };
+
+    const history = state.tournamentHistory || [];
+    if (!history.length) return { teams: [], history: [] };
+
+    const years = rel.years || 3;
+    const recent = history.slice(-years);
+
+    // Acumular puntos y partidos por equipo en los últimos N años
+    const teamStats = {};
+    recent.forEach((season) => {
+      Object.entries(season.teams || {}).forEach(([teamId, stats]) => {
+        if (!teamStats[teamId]) {
+          teamStats[teamId] = { pts: 0, pj: 0 };
+        }
+        teamStats[teamId].pts += stats.pts || 0;
+        teamStats[teamId].pj += stats.pj || 0;
+      });
+    });
+
+    // Calcular promedios y ordenar (peor promedio primero = desciende)
+    const relegationTeams = Object.entries(teamStats)
+      .map(([teamId, stats]) => ({
+        teamId,
+        pts: stats.pts,
+        pj: stats.pj,
+        avg: stats.pj > 0 ? stats.pts / stats.pj : 0
+      }))
+      .sort((a, b) => a.avg - b.avg || a.pts - b.pts || b.pj - a.pj);
+
+    const descenden = relegationTeams.slice(0, rel.teams || 2);
+
+    return {
+      teams: descenden,
+      history: recent,
+      allAverages: relegationTeams
+    };
+  }
+
+  LAS.standings = { compute, computeInternationalCups, computeRelegation };
 })();
