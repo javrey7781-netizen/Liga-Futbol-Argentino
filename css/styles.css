@@ -535,6 +535,43 @@ img.badge--xl { width: 76px; height: 76px; }
 .scorers-card { margin-top: 22px; }
 .scorers-table { min-width: 420px; }
 
+/* ---------------------- Copas internacionales ---------------------- */
+.cups-card { margin-top: 22px; }
+.cups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 14px; }
+.cup-group { display: flex; flex-direction: column; gap: 10px; }
+.cup-group h4 {
+  display: flex; align-items: center; gap: 7px;
+  margin: 0; font-size: 11px; font-weight: 900; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text);
+}
+.cup-group--lib h4 { color: #1e9e4e; }
+.cup-group--sud h4 { color: #4c8dff; }
+.cups-table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 0; }
+.cups-table th {
+  padding: 7px 6px; font-size: 8px; font-weight: 900; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text3); text-align: center;
+  border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+.cups-table th:nth-child(2) { text-align: left; }
+.cups-table td { padding: 8px 6px; text-align: center; color: var(--text2); border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+.cups-table td:nth-child(2) { text-align: left; font-weight: 700; color: var(--text); }
+.cups-table .pos { font-weight: 900; color: var(--text2); width: 26px; }
+.cup-reason { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+.cup-reason::before { content: '['; }
+.cup-reason::after { content: ']'; }
+
+.cup {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 4px;
+  font-size: 9px; font-weight: 900; margin-left: 6px;
+}
+.cup--lib { background: #1e9e4e; color: #fff; }
+.cup--sud { background: #4c8dff; color: #fff; }
+
+@media (max-width: 980px) {
+  .cups-grid { grid-template-columns: 1fr; }
+}
+
 /* ----------------------------- Goleadores -------------------------- */
 .scorer-list { display: flex; flex-direction: column; }
 .scorer { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border-soft); }

@@ -382,12 +382,22 @@
       const container = document.getElementById('standings-content');
       if (!container) return;
 
+      const cups = LAS.standings.computeInternationalCups(ctx.state, ctx.tournament, ctx.standings);
+      const libSet = new Set(cups.libertadores.map((c) => c.teamId));
+      const sudSet = new Set(cups.sudamericana.map((c) => c.teamId));
+
+      const cupBadge = (teamId) => {
+        if (libSet.has(teamId)) return '<span class="cup cup--lib">L</span>';
+        if (sudSet.has(teamId)) return '<span class="cup cup--sud">S</span>';
+        return '';
+      };
+
       const tables = ctx.standings.map((group) => {
         const rows = group.rows.map((row) => {
           const team = resolve(ctx, row.teamId);
           return '<tr class="' + (row.qualified ? 'is-qualified' : '') + '">' +
             '<td class="pos">' + row.rank + '</td>' +
-            '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
+            '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span>' + cupBadge(row.teamId) + '</td>' +
             '<td>' + row.pj + '</td>' +
             '<td>' + row.pg + '</td>' +
             '<td>' + row.pe + '</td>' +
@@ -411,7 +421,7 @@
             '<span class="pill">' + group.played + '/' + group.total + ' partidos</span>' +
           '</div>' +
           '<div class="table-wrap"><table class="standings">' +
-          '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th><th>Últimos 5</th></tr></thead>' +
+          '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th><th>Últimos 5</th><th>Copas</th></tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
           '</table></div>' + legend +
         '</section>';
@@ -428,8 +438,11 @@
         '</tr>';
       }).join('');
 
+      const cupsSection = cupsSectionHtml(ctx, cups);
+
       container.innerHTML =
         '<div class="standings-grid ' + (ctx.standings.length === 1 ? 'is-single' : '') + '">' + tables + '</div>' +
+        cupsSection +
         '<section class="card scorers-card">' +
           '<div class="card-head"><div><span class="eyebrow">Goleadores</span><h3>Tabla de artilleros</h3></div>' +
           '<span class="pill">' + scorers.length + ' jugadores</span></div>' +
@@ -443,6 +456,48 @@
     } catch (error) {
       console.error('Error renderizando tabla:', error);
     }
+  }
+
+  function cupsSectionHtml(ctx, cups) {
+    if (!ctx.tournament.internationalCups) return '';
+
+    const libRows = cups.libertadores.map((c, i) => {
+      const team = resolve(ctx, c.teamId);
+      return '<tr>' +
+        '<td class="pos">' + (i + 1) + '</td>' +
+        '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
+        '<td class="pts cup-reason">' + (c.reason === 'Campeón' ? 'Campeón' : 'Tabla anual') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    const sudRows = cups.sudamericana.map((c, i) => {
+      const team = resolve(ctx, c.teamId);
+      return '<tr>' +
+        '<td class="pos">' + (i + 1) + '</td>' +
+        '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
+        '<td class="pts cup-reason">' + (c.reason === 'Campeón' ? 'Campeón' : 'Tabla anual') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    return '<section class="card cups-card">' +
+      '<div class="card-head"><div><span class="eyebrow">Copas internacionales</span><h3>Clasificaciones</h3></div></div>' +
+      '<div class="cups-grid">' +
+      '<div class="cup-group cup-group--lib">' +
+        '<h4>' + icon('trophy', 16) + ' Copa Libertadores</h4>' +
+        '<div class="table-wrap"><table class="standings cups-table">' +
+        '<thead><tr><th>#</th><th>Equipo</th><th>Clasificación</th></tr></thead>' +
+        '<tbody>' + (libRows || '<tr><td colspan="3" class="muted-cell">Sin clasificados aún</td></tr>') + '</tbody>' +
+        '</table></div>' +
+      '</div>' +
+      '<div class="cup-group cup-group--sud">' +
+        '<h4>' + icon('trophy', 16) + ' Copa Sudamericana</h4>' +
+        '<div class="table-wrap"><table class="standings cups-table">' +
+        '<thead><tr><th>#</th><th>Equipo</th><th>Clasificación</th></tr></thead>' +
+        '<tbody>' + (sudRows || '<tr><td colspan="3" class="muted-cell">Sin clasificados aún</td></tr>') + '</tbody>' +
+        '</table></div>' +
+      '</div>' +
+      '</div>' +
+    '</section>';
   }
 
   /* ---------------------------- Playoffs ---------------------------- */

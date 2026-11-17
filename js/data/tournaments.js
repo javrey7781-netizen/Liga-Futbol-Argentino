@@ -53,6 +53,10 @@
         teamsPerGroup: 4,
         neutralFinal: true
       },
+      internationalCups: {
+        libertadores: 6,
+        sudamericana: 6
+      },
       ui: {
         roundLabel: 'Fecha',
         qualificationLabel: 'Playoffs'
@@ -75,6 +79,10 @@
         enabled: true,
         teamsPerGroup: 8,
         neutralFinal: true
+      },
+      internationalCups: {
+        libertadores: 6,
+        sudamericana: 6
       },
       ui: {
         roundLabel: 'Fecha',
