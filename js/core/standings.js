@@ -23,42 +23,93 @@
 
       fixtures.forEach((round) => {
         round.matches.forEach((match) => {
-          if (match.groupIndex !== groupIndex) return;
+          // Partido de zona regular: ambos equipos deben estar en esta zona
+          // Partido especial (interzonal/clásicos, groupIndex === -1): contar
+          // solo para el equipo que pertenece a esta zona
+          const isSpecial = match.groupIndex === -1;
+          if (!isSpecial && match.groupIndex !== groupIndex) return;
+
           const result = state.results[match.id];
           if (!result) return;
 
           const home = byTeam.get(match.home);
           const away = byTeam.get(match.away);
-          if (!home || !away) return;
+          const homeInZone = !!home;
+          const awayInZone = !!away;
 
-          home.pj++;
-          away.pj++;
-          home.gf += result.homeGoals;
-          home.gc += result.awayGoals;
-          away.gf += result.awayGoals;
-          away.gc += result.homeGoals;
+          // En partidos especiales, si ninguno de los dos está en esta zona, saltar
+          if (isSpecial && !homeInZone && !awayInZone) return;
 
-          if (result.homeGoals > result.awayGoals) {
-            home.pg++;
-            home.pts += tournament.points.win;
-            away.pp++;
-            away.pts += tournament.points.loss;
-            home.form.push('G');
-            away.form.push('P');
-          } else if (result.homeGoals < result.awayGoals) {
-            away.pg++;
-            away.pts += tournament.points.win;
-            home.pp++;
-            home.pts += tournament.points.loss;
-            away.form.push('G');
-            home.form.push('P');
-          } else {
-            home.pe++;
-            away.pe++;
-            home.pts += tournament.points.draw;
-            away.pts += tournament.points.draw;
-            home.form.push('E');
-            away.form.push('E');
+          // Partido intra-zona normal: ambos equipos cuentan
+          if (homeInZone && awayInZone) {
+            home.pj++;
+            away.pj++;
+            home.gf += result.homeGoals;
+            home.gc += result.awayGoals;
+            away.gf += result.awayGoals;
+            away.gc += result.homeGoals;
+
+            if (result.homeGoals > result.awayGoals) {
+              home.pg++;
+              home.pts += tournament.points.win;
+              away.pp++;
+              away.pts += tournament.points.loss;
+              home.form.push('G');
+              away.form.push('P');
+            } else if (result.homeGoals < result.awayGoals) {
+              away.pg++;
+              away.pts += tournament.points.win;
+              home.pp++;
+              home.pts += tournament.points.loss;
+              away.form.push('G');
+              home.form.push('P');
+            } else {
+              home.pe++;
+              away.pe++;
+              home.pts += tournament.points.draw;
+              away.pts += tournament.points.draw;
+              home.form.push('E');
+              away.form.push('E');
+            }
+          }
+          // Partido especial con un equipo de la zona y otro de otra zona:
+          // solo cuenta para el equipo de la zona
+          else if (isSpecial && homeInZone && !awayInZone) {
+            home.pj++;
+            home.gf += result.homeGoals;
+            home.gc += result.awayGoals;
+
+            if (result.homeGoals > result.awayGoals) {
+              home.pg++;
+              home.pts += tournament.points.win;
+              home.form.push('G');
+            } else if (result.homeGoals < result.awayGoals) {
+              home.pp++;
+              home.pts += tournament.points.loss;
+              home.form.push('P');
+            } else {
+              home.pe++;
+              home.pts += tournament.points.draw;
+              home.form.push('E');
+            }
+          } else if (isSpecial && !homeInZone && awayInZone) {
+            away.pj++;
+            away.gf += result.awayGoals;
+            away.gc += result.homeGoals;
+
+            if (result.awayGoals > result.homeGoals) {
+              away.pg++;
+              away.pts += tournament.points.win;
+              away.form.push('G');
+            } else if (result.awayGoals < result.homeGoals) {
+              away.pp++;
+              away.pts += tournament.points.loss;
+              away.form.push('P');
+            } else {
+              away.pe++;
+              away.pts += tournament.points.draw;
+              away.form.push('E');
+            }
           }
         });
       });

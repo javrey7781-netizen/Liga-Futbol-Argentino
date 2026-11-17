@@ -58,15 +58,46 @@
       );
     });
 
-    const totalRounds = Math.max.apply(null, perGroup.map((g) => g.length));
+    const regularRounds = tournament.regularRounds || perGroup[0].length;
     const rounds = [];
 
-    for (let r = 0; r < totalRounds; r++) {
+    // Fechas regulares (intra-zona): 14 fechas
+    for (let r = 0; r < regularRounds; r++) {
       const matches = [];
       perGroup.forEach((groupRounds) => {
         if (groupRounds[r]) matches.push.apply(matches, groupRounds[r]);
       });
-      rounds.push({ number: r + 1, matches });
+      rounds.push({ number: r + 1, matches, type: 'regular' });
+    }
+
+    // Fecha interzonal (usando configuración del torneo)
+    if (tournament.interzonales && tournament.interzonales.length) {
+      const interMatches = tournament.interzonales.map((pair, i) =>
+        ({
+          id: 'm-9-0-' + i,
+          round: regularRounds + 1,
+          groupIndex: -1,
+          group: 'Interzonal',
+          home: pair[0],
+          away: pair[1]
+        })
+      );
+      rounds.push({ number: regularRounds + 1, matches: interMatches, type: 'interzonal' });
+    }
+
+    // Fecha de clásicos (usando configuración del torneo)
+    if (tournament.clasicos && tournament.clasicos.length) {
+      const clasicosMatches = tournament.clasicos.map((pair, i) =>
+        ({
+          id: 'm-10-0-' + i,
+          round: regularRounds + 2,
+          groupIndex: -1,
+          group: 'Clásicos',
+          home: pair[0],
+          away: pair[1]
+        })
+      );
+      rounds.push({ number: regularRounds + 2, matches: clasicosMatches, type: 'clasicos' });
     }
 
     return rounds;

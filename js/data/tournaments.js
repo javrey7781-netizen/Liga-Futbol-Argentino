@@ -33,40 +33,102 @@
 
   const TODOS = LAS.TEAMS.map((t) => t.id);
 
-  LAS.TOURNAMENTS = [
-    {
-      id: 'liga-profesional-2026',
-      name: 'Liga Profesional',
-      fullName: 'Liga Profesional Argentina 2026',
+  /* ----------------------------------------------------------------
+     Clásicos y emparejamientos fijos para la fecha de clásicos.
+     Cada par es [equipoZonaA, equipoZonaB] o [equipoA, equipoB] sin
+     importar la zona; el motor los respeta tal cual.
+     ---------------------------------------------------------------- */
+  const CLASICOS = [
+    ['river-plate', 'boca-juniors'],
+    ['racing-club', 'independiente'],
+    ['san-lorenzo', 'huracan'],
+    ['newells', 'rosario-central'],
+    ['belgrano', 'talleres'],
+    ['gimnasia', 'estudiantes'],
+    ['velez', 'tigre'],
+    ['lanus', 'banfield'],
+    ['godoy-cruz', 'independiente-rivadavia'],
+    ['atletico-tucuman', 'san-martin-sj'],
+    ['platense', 'argentinos'],
+    ['barracas-central', 'defensa-justicia'],
+    ['instituto', 'central-cordoba'],
+    ['sarmiento', 'aldosivi'],
+    ['union', 'riestra']
+  ];
+
+  /* Emparejamientos interzonales para la fecha interzonal (no son clásicos).
+     Se usan para completar los 15 partidos de la fecha interzonal. */
+  const INTERZONALES = [
+    ['river-plate', 'racing-club'],
+    ['boca-juniors', 'estudiantes'],
+    ['velez', 'independiente'],
+    ['talleres', 'san-lorenzo'],
+    ['rosario-central', 'lanus'],
+    ['huracan', 'argentinos'],
+    ['newells', 'defensa-justicia'],
+    ['union', 'godoy-cruz'],
+    ['tigre', 'belgrano'],
+    ['gimnasia', 'instituto'],
+    ['banfield', 'atletico-tucuman'],
+    ['barracas-central', 'independiente-rivadavia'],
+    ['platense', 'central-cordoba'],
+    ['san-martin-sj', 'sarmiento'],
+    ['aldosivi', 'riestra']
+  ];
+
+  /* Genera la configuración de un semestre (Apertura o Clausura) */
+  function semesterConfig(id, name, semesterLabel) {
+    return {
+      id,
+      name,
+      fullName: name + ' ' + semesterLabel,
       season: '2026',
       country: 'Argentina',
-      description: '30 clubes divididos en dos zonas, 15 fechas y playoffs con los cuatro mejores de cada zona.',
+      description: '30 clubes en dos zonas (A y B) de 15 equipos. 14 fechas intra-zona + 1 fecha interzonal + 1 fecha de clásicos = 16 fechas. Clasifican los 8 mejores de cada zona a playoffs.',
       format: 'groups_playoffs',
       rounds: 'single',
       points: { win: 3, draw: 1, loss: 0 },
+      totalRounds: 16,
+      regularRounds: 14,
       groups: [
         { name: 'Zona A', teamIds: ZONA_A },
         { name: 'Zona B', teamIds: ZONA_B }
       ],
       playoffs: {
         enabled: true,
-        teamsPerGroup: 4,
+        teamsPerGroup: 8,
         neutralFinal: true
       },
       internationalCups: {
-        libertadores: 6,
-        sudamericana: 6
+        libertadores: 2,
+        sudamericana: 4
       },
       relegation: {
         enabled: true,
         teams: 2,
         years: 3
       },
+      clasicos: CLASICOS,
+      interzonales: INTERZONALES,
+      semester: semesterLabel,
       ui: {
         roundLabel: 'Fecha',
         qualificationLabel: 'Playoffs'
       }
-    },
+    };
+  }
+
+  LAS.TOURNAMENTS = [
+    semesterConfig(
+      'liga-apertura-2026',
+      'Liga Profesional — Apertura',
+      'Apertura 2026'
+    ),
+    semesterConfig(
+      'liga-clausura-2026',
+      'Liga Profesional — Clausura',
+      'Clausura 2026'
+    ),
     {
       id: 'liga-unica-2026',
       name: 'Liga Única',
@@ -140,5 +202,14 @@
 
   LAS.getTournament = function (id) {
     return LAS.TOURNAMENTS.find((t) => t.id === id) || LAS.TOURNAMENTS[0];
+  };
+
+  /* Devuelve el ID del siguiente semestre (Apertura -> Clausura, Clausura -> null) */
+  LAS.getNextSemester = function (tournamentId) {
+    const idx = LAS.TOURNAMENTS.findIndex((t) => t.id === tournamentId);
+    if (idx === -1) return null;
+    const next = LAS.TOURNAMENTS[idx + 1];
+    if (next && next.semester === 'Clausura 2026') return next.id;
+    return null;
   };
 })();

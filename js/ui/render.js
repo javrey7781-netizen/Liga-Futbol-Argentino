@@ -93,8 +93,15 @@
       const primary = document.getElementById('hero-sim-btn');
       const secondary = document.getElementById('hero-season-btn');
 
+      const nextSemesterId = LAS.getNextSemester ? LAS.getNextSemester(ctx.tournament.id) : null;
+
       if (primary) {
-        if (champion) {
+        if (champion && nextSemesterId) {
+          const nextTournament = LAS.getTournament(nextSemesterId);
+          primary.textContent = 'Jugar ' + nextTournament.name.replace('Liga Profesional — ', '');
+          primary.dataset.action = 'start-next-semester';
+          primary.dataset.nextSemester = nextSemesterId;
+        } else if (champion) {
           primary.textContent = 'Ver playoffs';
           primary.dataset.action = 'go-playoffs';
         } else if (ctx.playoffs) {

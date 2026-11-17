@@ -693,7 +693,16 @@
   function heroPrimary() {
     try {
       const current = buildContext();
+      const tournament = current.tournament;
+
       if (current.playoffs && current.playoffs.champion) {
+        // Temporada completa: ofrecer siguiente semestre si existe
+        const nextSemester = LAS.getNextSemester(state.tournamentId);
+        if (nextSemester) {
+          location.hash = '#simulador';
+          // El botón del héroe ya se actualiza en renderHero
+          return;
+        }
         location.hash = '#playoffs';
         return;
       }
@@ -1126,7 +1135,12 @@
         const action = target.closest('[data-action]');
         if (action) {
           event.preventDefault();
-          handleAction(action.dataset.action);
+          if (action.dataset.action === 'start-next-semester') {
+            const btn = target.closest('[data-next-semester]');
+            if (btn) startTournament(btn.dataset.nextSemester);
+          } else {
+            handleAction(action.dataset.action);
+          }
         }
       });
 
