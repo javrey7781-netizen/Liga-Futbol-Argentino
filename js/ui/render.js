@@ -668,6 +668,93 @@
   }
 
   /* ----------------------------- Equipos ---------------------------- */
+  /* ---------------------------- Copa Argentina ---------------------------- */
+  function renderCopa(ctx) {
+    try {
+      const container = document.getElementById('copa-content');
+      const actions = document.getElementById('copa-actions');
+      if (!container) return;
+
+      const tournament = ctx.tournament;
+      const st = ctx.state;
+      const hasBracket = !!st.copaBracket && st.copaBracket.length > 0;
+      const champion = st.copaChampion;
+
+      if (!hasBracket) {
+        container.innerHTML = '<section class="card empty-state">' +
+          '<div class="empty-icon">' + icon('trophy', 42) + '</div>' +
+          '<h3>La Copa Argentina todavía no arrancó</h3>' +
+          '<p>Generá el bracket para comenzar a simular los partidos de eliminación directa.</p>' +
+          '<div class="card-cta">' +
+          '<button type="button" class="btn btn-primary btn-sm" data-action="init-copa">Generar bracket</button>' +
+          '</div>' +
+        '</section>';
+        if (actions) actions.innerHTML = '';
+        return;
+      }
+
+      // Acciones: generar nuevo bracket o simular todos
+      if (actions) {
+        const btnText = champion ? 'Nuevo torneo' : 'Simular todos';
+        const btnAction = champion ? 'new-tournament' : 'sim-all-copa';
+        actions.innerHTML = '<div class="card-tools">' +
+          '<button type="button" class="btn btn-primary btn-sm" data-action="' + btnAction + '">' + btnText + '</button>' +
+          (champion ? '<button type="button" class="btn btn-ghost btn-sm" data-action="new-tournament">Otro torneo</button>' : '') +
+          '</div>';
+      }
+
+      const roundsHtml = st.copaBracket.map((round) => {
+        const matchesHtml = round.matches.map((match) => {
+          const result = st.copaResults && st.copaResults[match.id];
+          const home = resolve(ctx, match.home);
+          const away = match.away ? resolve(ctx, match.away) : null;
+          const homeWon = result && result.winner === match.home;
+          const awayWon = result && result.winner === match.away;
+
+          if (match.bye) {
+            return '<div class="bracket-match">' +
+              '<div class="bracket-match-head"><span>Bye</span></div>' +
+              '<div class="bracket-team is-winner">' + badge(home, 'badge--xs') + '<span>' + esc(home.name) + '</span><b>–</b></div>' +
+              '<div class="bracket-team"><span>Avanza directo</span></div>' +
+            '</div>';
+          }
+
+          return '<div class="bracket-match">' +
+            '<div class="bracket-match-head"><span>' + esc(round.name) + '</span></div>' +
+            '<div class="bracket-team ' + (homeWon ? 'is-winner' : '') + '">' + badge(home, 'badge--xs') + '<span>' + esc(home.name) + '</span><b>' + (result ? result.homeGoals : '–') + '</b></div>' +
+            '<div class="bracket-team ' + (awayWon ? 'is-winner' : '') + '">' + (away ? badge(away, 'badge--xs') + '<span>' + esc(away.name) + '</span>' : '<span>TBD</span>') + '<b>' + (result ? result.awayGoals : '–') + '</b></div>' +
+            '<div class="bracket-actions">' +
+            (!result ? '<button type="button" class="mini-btn bracket-play" data-sim-copa-match="' + match.id + '" title="Simular partido">' + icon('play', 11) + '<span>Simular</span></button>' : '') +
+            '</div>' +
+            '</div>';
+        }).join('');
+
+        return '<div class="bracket-col">' +
+          '<div class="bracket-col-head"><h4>' + esc(round.name) + '</h4><span>' + round.matches.length + ' partido(s)</span></div>' +
+          matchesHtml +
+        '</div>';
+      }).join('');
+
+      const championHtml = champion
+        ? '<section class="champion-card">' +
+          '<div class="champion-glow"></div>' +
+          '<div class="champion-trophy">' + icon('trophy', 54) + '</div>' +
+          '<span class="eyebrow">Campeón Copa Argentina</span>' +
+          '<div class="champion-team">' + badge(resolve(ctx, champion), 'badge--xl') + '<h2>' + esc(resolve(ctx, champion).name) + '</h2></div>' +
+          '<p>Clasificado a la Copa Libertadores.</p>' +
+          '</section>'
+        : '';
+
+      container.innerHTML = championHtml +
+        '<div class="bracket bracket--' + st.copaBracket.length + '" style="--cols:' + st.copaBracket.length + '">' +
+        roundsHtml +
+        '</div>';
+    } catch (error) {
+      console.error('Error renderizando Copa Argentina:', error);
+      container.innerHTML = '<section class="card empty-state"><h3>Error renderizando Copa Argentina</h3><p>' + esc(error.message) + '</p></section>';
+    }
+  }
+
   function renderTeams(ctx) {
     try {
       const container = document.getElementById('teams-content');
@@ -766,6 +853,7 @@
     renderFixture(ctx);
     renderStandings(ctx);
     renderPlayoffs(ctx);
+    renderCopa(ctx);
     renderTeams(ctx);
     renderFooter(ctx);
   }

@@ -239,7 +239,10 @@
       results,
       playoffs,
       celebrated: !!data.celebrated,
-      tournamentHistory: Array.isArray(data.tournamentHistory) ? data.tournamentHistory : []
+      tournamentHistory: Array.isArray(data.tournamentHistory) ? data.tournamentHistory : [],
+      copaResults: data.copaResults || {},
+      copaBracket: data.copaBracket || null,
+      copaChampion: data.copaChampion || null
     };
   }
 

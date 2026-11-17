@@ -98,6 +98,43 @@
         roundLabel: 'Fecha',
         qualificationLabel: 'Playoffs'
       }
+    },
+    {
+      id: 'copa-argentina-2026',
+      name: 'Copa Argentina',
+      fullName: 'Copa Argentina 2026',
+      season: '2026',
+      country: 'Argentina',
+      description: 'Torneo de eliminación directa con los 30 clubes de la liga. Partido único, empate se define por penales. El campeón clasifica a la Copa Libertadores.',
+      format: 'knockout',
+      rounds: 'single',
+      points: { win: 3, draw: 1, loss: 0 },
+      groups: [
+        { name: 'Eliminación directa', teamIds: TODOS }
+      ],
+      playoffs: {
+        enabled: false,
+        teamsPerGroup: 0,
+        neutralFinal: true
+      },
+      internationalCups: {
+        libertadores: 1,
+        sudamericana: 0
+      },
+      relegation: {
+        enabled: false,
+        teams: 0,
+        years: 3
+      },
+      cup: {
+        enabled: true,
+        totalTeams: 32,
+        rounds: ['32avos', '16avos', 'Octavos', 'Cuartos', 'Semifinales', 'Final']
+      },
+      ui: {
+        roundLabel: 'Ronda',
+        qualificationLabel: 'Clasificados'
+      }
     }
   ];
 

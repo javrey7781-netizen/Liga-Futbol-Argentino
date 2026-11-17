@@ -35,7 +35,10 @@
       results: {},
       playoffs: null,
       celebrated: false,
-      tournamentHistory: []
+      tournamentHistory: [],
+      copaResults: {},
+      copaBracket: null,
+      copaChampion: null
     };
   }
 
@@ -345,6 +348,183 @@
     } catch (error) {
       console.error('Error simulando temporada:', error);
       LAS.dom.toast('Error al simular temporada.', 'error');
+    }
+  }
+
+  /* ---------------------- Copa Argentina ---------------------- */
+  function initCopa() {
+    try {
+      const tournament = LAS.getTournament('copa-argentina-2026');
+      const teamIds = LAS.TEAMS.map((t) => t.id);
+      const seed = state.seed;
+      const bracket = LAS.copa.buildBracket(teamIds, seed);
+      state.copaBracket = bracket;
+      state.copaResults = {};
+      state.copaChampion = null;
+      LAS.storage.save(state);
+      refresh();
+      LAS.dom.toast('Copa Argentina: bracket generado.', 'success');
+    } catch (error) {
+      console.error('Error iniciando Copa Argentina:', error);
+      LAS.dom.toast('Error al iniciar la Copa Argentina.', 'error');
+    }
+  }
+
+  function simulateCopaMatch(matchId) {
+    try {
+      if (!state.copaBracket) return;
+      if (state.copaResults[matchId]) {
+        LAS.dom.toast('Ese partido ya se jugó.', 'info');
+        return;
+      }
+
+      const match = findCopaMatch(matchId);
+      if (!match) return;
+      if (match.bye) {
+        LAS.dom.toast('Este equipo tiene bye (avanza directo).', 'info');
+        return;
+      }
+
+      const result = LAS.copa.simulateMatch(state, match);
+      state.copaResults[matchId] = result;
+
+      // Si el partido definió un ganador, propagar al siguiente partido
+      advanceCopaWinner(matchId, result.winner);
+
+      LAS.storage.save(state);
+      refresh();
+      LAS.dom.toast('Partido de Copa simulado.', 'success');
+    } catch (error) {
+      console.error('Error simulando partido de copa:', error);
+      LAS.dom.toast('Error al simular partido de copa.', 'error');
+    }
+  }
+
+  function findCopaMatch(matchId) {
+    if (!state.copaBracket) return null;
+    for (const round of state.copaBracket) {
+      const found = round.matches.find((m) => m.id === matchId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function advanceCopaWinner(matchId, winnerId) {
+    if (!state.copaBracket) return;
+    const match = findCopaMatch(matchId);
+    if (!match) return;
+
+    // Encontrar el partido de la siguiente ronda que recibe a este ganador
+    const nextRoundIndex = match.round; // ronda actual es 1-based, siguiente es match.round
+    const nextRound = state.copaBracket.find((r) => r.matches.some((m) => m.round === nextRoundIndex + 1));
+    if (!nextRound) {
+      // No hay siguiente ronda, este es el campeón
+      state.copaChampion = winnerId;
+      return;
+    }
+
+    // Buscar un partido en la siguiente ronda que tenga un slot vacío (home o away no asignado)
+    // Para simplicidad, asignamos al primer partido con home o away nulo
+    // En una implementación completa, se mapearía correctamente por posición en el bracket
+    const emptySlot = nextRound.matches.find((m) => !m.home || !m.away);
+    if (emptySlot) {
+      if (!emptySlot.home) emptySlot.home = winnerId;
+      else if (!emptySlot.away) emptySlot.away = winnerId;
+    }
+  }
+
+  function simulateAllCopa() {
+    try {
+      if (!state.copaBracket) {
+        initCopa();
+        return;
+      }
+      let count = 0;
+      for (const round of state.copaBracket) {
+        for (const match of round.matches) {
+          if (!match.bye && !state.copaResults[match.id] && match.home && match.away) {
+            state.copaResults[match.id] = LAS.copa.simulateMatch(state, match);
+            advanceCopaWinner(match.id, state.copaResults[match.id].winner);
+            count++;
+          }
+        }
+      }
+      // Determinar campeón si ya no hay partidos pendientes
+      const hasPending = state.copaBracket.some((r) =>
+        r.matches.some((m) => !m.bye && !state.copaResults[m.id] && m.home && m.away)
+      );
+      if (!hasPending && state.copaBracket.length > 0) {
+        const lastRound = state.copaBracket[state.copaBracket.length - 1];
+        const finalMatch = lastRound.matches[0];
+        if (finalMatch && state.copaResults[finalMatch.id]) {
+          state.copaChampion = state.copaResults[finalMatch.id].winner;
+        }
+      }
+
+      LAS.storage.save(state);
+      refresh();
+      if (count > 0) {
+        LAS.dom.toast('Copa Argentina: ' + count + ' partidos simulados.', 'success');
+      } else {
+        LAS.dom.toast('Copa Argentina: no quedan partidos pendientes.', 'info');
+      }
+    } catch (error) {
+      console.error('Error simulando Copa Argentina:', error);
+      LAS.dom.toast('Error al simular Copa Argentina.', 'error');
+    }
+  }
+
+  function saveCopaResult(matchId, homeGoals, awayGoals, homePens, awayPens) {
+    try {
+      const match = findCopaMatch(matchId);
+      if (!match) return;
+      if (state.copaResults[matchId]) {
+        LAS.dom.toast('Ese partido ya tiene resultado.', 'info');
+        return;
+      }
+
+      let winner = null;
+      let penalties = null;
+
+      if (homeGoals > awayGoals) {
+        winner = match.home;
+      } else if (awayGoals > homeGoals) {
+        winner = match.away;
+      } else {
+        // Empate → penales
+        if (homePens === null || awayPens === null || homePens === awayPens) {
+          LAS.dom.toast('Completá penales válidos (no pueden empatar).', 'error');
+          return;
+        }
+        penalties = { home: homePens, away: awayPens };
+        winner = homePens > awayPens ? match.home : match.away;
+      }
+
+      state.copaResults[matchId] = {
+        homeId: match.home,
+        awayId: match.away,
+        homeGoals,
+        awayGoals,
+        penalties,
+        winner,
+        manual: true
+      };
+
+      advanceCopaWinner(matchId, winner);
+
+      // Verificar si hay campeón
+      const lastRound = state.copaBracket[state.copaBracket.length - 1];
+      const finalMatch = lastRound.matches[0];
+      if (finalMatch && state.copaResults[finalMatch.id]) {
+        state.copaChampion = state.copaResults[finalMatch.id].winner;
+      }
+
+      LAS.storage.save(state);
+      refresh();
+      LAS.dom.toast('Resultado de Copa cargado a mano.', 'success');
+    } catch (error) {
+      console.error('Error guardando resultado de copa:', error);
+      LAS.dom.toast('Error al guardar resultado de copa.', 'error');
     }
   }
 
@@ -858,6 +1038,8 @@
         case 'import': triggerImport(); break;
         case 'reset': resetTournament(); break;
         case 'settings': openSettings(); break;
+        case 'init-copa': initCopa(); break;
+        case 'sim-all-copa': simulateAllCopa(); break;
         default: break;
       }
     } catch (error) {
@@ -866,7 +1048,7 @@
   }
 
   /* ------------------------------ Ruteo ----------------------------- */
-  const VIEWS = ['simulador', 'fixture', 'tabla', 'playoffs', 'equipos'];
+  const VIEWS = ['simulador', 'fixture', 'tabla', 'playoffs', 'copa', 'equipos'];
 
   function route() {
     try {
@@ -909,6 +1091,13 @@
         if (simMatch) {
           event.preventDefault();
           simulateMatch(simMatch.dataset.simMatch);
+          return;
+        }
+
+        const simCopaMatch = target.closest('[data-sim-copa-match]');
+        if (simCopaMatch) {
+          event.preventDefault();
+          simulateCopaMatch(simCopaMatch.dataset.simCopaMatch);
           return;
         }
 
