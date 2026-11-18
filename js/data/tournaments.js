@@ -81,7 +81,7 @@
     return {
       id,
       name,
-      fullName: name + ' ' + semesterLabel,
+      fullName: name,
       season: '2026',
       country: 'Argentina',
       description: '30 clubes en dos zonas (A y B) de 15 equipos. 14 fechas intra-zona + 1 fecha interzonal + 1 fecha de clásicos = 16 fechas. Clasifican los 8 mejores de cada zona a playoffs.',

@@ -258,6 +258,12 @@
       const container = document.getElementById('fixture-content');
       if (!container) return;
 
+      // Actualizar título del page-head con el torneo actual
+      const fixtureHead = document.querySelector('#view-fixture .page-head h2');
+      if (fixtureHead) {
+        fixtureHead.textContent = 'Fixture y resultados — ' + esc(ctx.tournament.fullName);
+      }
+
       const next = LAS.fixtures.nextRound(ctx.fixtures, ctx.state.results);
       const selected = ctx.ui.fixtureRound || (next ? next.number : ctx.fixtures.length);
       const round = ctx.fixtures[selected - 1];
@@ -307,7 +313,7 @@
         '<div class="round-nav">' + nav + '</div>' +
         '<section class="card card--matches">' +
           '<div class="card-head">' +
-            '<div><span class="eyebrow">' + roundLabel(ctx) + ' ' + selected + ' de ' + ctx.fixtures.length + '</span><h3>Partidos</h3></div>' +
+            '<div><span class="eyebrow">' + roundLabel(ctx) + ' ' + selected + ' de ' + ctx.fixtures.length + ' · ' + esc(ctx.tournament.fullName) + '</span><h3>Fixture y resultados</h3></div>' +
             '<div class="card-tools">' +
               '<span class="pill">' + played + '/' + round.matches.length + ' jugados</span>' +
               '<button type="button" class="btn btn-primary btn-sm" data-sim-round="' + selected + '">Simular ' + esc(roundLabel(ctx).toLowerCase()) + '</button>' +
