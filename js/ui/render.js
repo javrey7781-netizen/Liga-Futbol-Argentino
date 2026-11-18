@@ -198,7 +198,6 @@
           '<div class="summary-grid">' +
             '<div class="summary-item"><span>Campeón</span><b>' + esc(champion.name) + '</b></div>' +
             '<div class="summary-item"><span>Goleador</span><b>' + (top ? esc(top.name) + ' (' + top.goals + ')' : '—') + '</b></div>' +
-            '<div class="summary-item"><span>Partidos totales</span><b>' + (regularMatches(ctx).length + countPlayoffMatches(ctx)) + '</b></div>' +
           '</div>' +
           '<div class="card-cta">' +
             '<a class="btn btn-primary btn-sm" href="#playoffs">Ver playoffs</a>' +
@@ -222,7 +221,7 @@
         const next = LAS.fixtures.nextRound(ctx.fixtures, ctx.state.results) || ctx.fixtures[ctx.fixtures.length - 1];
         dash.innerHTML = matchCard(ctx, {
           eyebrow: roundLabel(ctx) + ' ' + next.number + ' de ' + ctx.fixtures.length,
-          title: 'Partidos',
+          title: '',
           matches: next.matches,
           showGroup: true,
           actions: '<button type="button" class="btn btn-primary btn-sm" data-sim-round="' + next.number + '">Simular ' +
