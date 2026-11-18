@@ -648,19 +648,9 @@
       const cups = LAS.standings.computeInternationalCups(tableAnnual, champions);
       const libSet = new Set(cups.libertadores.map((c) => c.teamId));
       const sudSet = new Set(cups.sudamericana.map((c) => c.teamId));
-
       const hasData = tableAnnual.length > 0;
 
-      if (!hasData) {
-        container.innerHTML = '<section class="card empty-state">' +
-          '<div class="empty-icon">' + icon('trophy', 42) + '</div>' +
-          '<h3>Tabla Anual aún no disponible</h3>' +
-          '<p>Simulá tanto el Apertura como el Clausura para generar la tabla anual acumulada.</p>' +
-          '</section>';
-        return;
-      }
-
-      const libRows = cups.libertadores.map((c, i) => {
+      const libRows = (cups.libertadores.length ? cups.libertadores.map((c, i) => {
         const team = resolve(ctx, c.teamId);
         const row = tableAnnual.find((r) => r.teamId === c.teamId);
         return '<tr>' +
@@ -670,9 +660,9 @@
           '<td>' + (row ? row.dg : '-') + '</td>' +
           '<td class="pts cup-reason">' + c.reason + '</td>' +
         '</tr>';
-      }).join('');
+      }).join('') : '<tr><td colspan="5" class="muted-cell">Sin clasificados aún</td></tr>');
 
-      const sudRows = cups.sudamericana.map((c, i) => {
+      const sudRows = (cups.sudamericana.length ? cups.sudamericana.map((c, i) => {
         const team = resolve(ctx, c.teamId);
         const row = tableAnnual.find((r) => r.teamId === c.teamId);
         return '<tr>' +
@@ -682,9 +672,9 @@
           '<td>' + (row ? row.dg : '-') + '</td>' +
           '<td class="pts cup-reason">' + c.reason + '</td>' +
         '</tr>';
-      }).join('');
+      }).join('') : '<tr><td colspan="5" class="muted-cell">Sin clasificados aún</td></tr>');
 
-      const allRows = tableAnnual.map((row, index) => {
+      const allRows = (tableAnnual.length ? tableAnnual.map((row, index) => {
         const team = resolve(ctx, row.teamId);
         const inLib = libSet.has(row.teamId);
         const inSud = sudSet.has(row.teamId);
@@ -703,7 +693,7 @@
           '<td>' + (row.dg > 0 ? '+' : '') + row.dg + '</td>' +
           '<td class="pts">' + row.pts + '</td>' +
         '</tr>';
-      }).join('');
+      }).join('') : '<tr><td colspan="11" class="muted-cell">Simulá Apertura y Clausura para ver la tabla anual acumulada.</td></tr>');
 
       const champA = champions.apertura ? resolve(ctx, champions.apertura) : null;
       const champC = champions.clausura ? resolve(ctx, champions.clausura) : null;
@@ -735,13 +725,15 @@
           '</table></div>' +
         '</section>' +
 
-        (champA || champC ? '<section class="card champions-card" style="margin-top:22px">' +
+        '<section class="card champions-card" style="margin-top:22px">' +
           '<div class="card-head"><div><span class="eyebrow">Campeones Semestrales</span><h3>Títulos 2026</h3></div>' +
           '<div class="champions-row">' +
-          (champA ? '<div class="champ-item"><div class="champ-badge">' + badge(champA, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champA.name) + '</div><div class="champ-sub">Campeón Apertura 2026</div></div></div>' : '') +
-          (champC ? '<div class="champ-item"><div class="champ-badge">' + badge(champC, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champC.name) + '</div><div class="champ-sub">Campeón Clausura 2026</div></div></div>' : '') +
+          (champA ? '<div class="champ-item"><div class="champ-badge">' + badge(champA, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champA.name) + '</div><div class="champ-sub">Campeón Apertura 2026</div></div></div>' :
+            '<div class="champ-item"><div class="champ-badge badge--lg" style="background:var(--bg2);border-color:var(--border-soft);color:var(--text2)"><span>?</span></div><div><div class="champ-name">—</div><div class="champ-sub">Campeón Apertura 2026</div></div></div>') +
+          (champC ? '<div class="champ-item"><div class="champ-badge">' + badge(champC, 'badge--lg') + '</div><div><div class="champ-name">' + esc(champC.name) + '</div><div class="champ-sub">Campeón Clausura 2026</div></div></div>' :
+            '<div class="champ-item"><div class="champ-badge badge--lg" style="background:var(--bg2);border-color:var(--border-soft);color:var(--text2)"><span>?</span></div><div><div class="champ-name">—</div><div class="champ-sub">Campeón Clausura 2026</div></div></div>') +
           '</div>' +
-        '</section>' : '');
+        '</section>';
     } catch (error) {
       console.error('Error renderizando tabla anual:', error);
       container.innerHTML = '<section class="card empty-state"><h3>Error renderizando tabla anual</h3><p>' + esc(error.message) + '</p></section>';
