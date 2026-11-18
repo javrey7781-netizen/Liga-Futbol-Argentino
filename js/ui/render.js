@@ -261,7 +261,9 @@
       // Actualizar título del page-head con el torneo actual
       const fixtureHead = document.querySelector('#view-fixture .page-head h2');
       if (fixtureHead) {
-        fixtureHead.textContent = 'Fixture y resultados — ' + esc(ctx.tournament.fullName);
+        const semestre = ctx.tournament.semester ? ctx.tournament.semester.split(' ')[0] : '';
+        const torneoLabel = semestre ? 'Torneo ' + semestre : '';
+        fixtureHead.textContent = torneoLabel ? 'Fixture y resultados - ' + torneoLabel : 'Fixture y resultados';
       }
 
       const next = LAS.fixtures.nextRound(ctx.fixtures, ctx.state.results);
