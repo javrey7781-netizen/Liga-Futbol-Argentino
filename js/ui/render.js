@@ -77,7 +77,6 @@
       const stats = [
         { value: teamCount, label: 'Equipos' },
         { value: ctx.fixtures.length, label: 'Fechas' },
-        { value: total, label: 'Partidos' },
         champion
           ? { value: champion.short, label: 'Campeón' }
           : { value: played, label: 'Jugados' }
@@ -90,35 +89,17 @@
         ).join('');
       }
 
-      const primary = document.getElementById('hero-sim-btn');
-      const secondary = document.getElementById('hero-season-btn');
+      const nuevaBtn = document.getElementById('hero-nueva-btn');
+      const cargarBtn = document.getElementById('hero-cargar-btn');
 
-      const nextSemesterId = LAS.getNextSemester ? LAS.getNextSemester(ctx.tournament.id) : null;
-
-      if (primary) {
-        if (champion && nextSemesterId) {
-          const nextTournament = LAS.getTournament(nextSemesterId);
-          primary.textContent = 'Jugar ' + nextTournament.name.replace('Liga Profesional — ', '');
-          primary.dataset.action = 'start-next-semester';
-          primary.dataset.nextSemester = nextSemesterId;
-        } else if (champion) {
-          primary.textContent = 'Ver playoffs';
-          primary.dataset.action = 'go-playoffs';
-        } else if (ctx.playoffs) {
-          primary.textContent = 'Jugar playoffs';
-          primary.dataset.action = 'sim-playoffs';
-        } else {
-          const next = LAS.fixtures.nextRound(ctx.fixtures, ctx.state.results);
-          primary.textContent = next
-            ? 'Simular ' + roundLabel(ctx).toLowerCase() + ' ' + next.number
-            : 'Simular temporada';
-          primary.dataset.action = next ? 'hero-primary' : 'sim-season';
-        }
+      if (nuevaBtn) {
+        nuevaBtn.textContent = 'Nueva Temporada';
+        nuevaBtn.dataset.action = 'nueva-temporada';
       }
 
-      if (secondary) {
-        secondary.textContent = champion ? 'Jugar otro torneo' : 'Simular temporada';
-        secondary.dataset.action = champion ? 'new-tournament' : 'sim-season';
+      if (cargarBtn) {
+        cargarBtn.textContent = 'Cargar Temporada';
+        cargarBtn.dataset.action = 'cargar-temporada';
       }
     } catch (error) {
       console.error('Error renderizando hero:', error);
@@ -249,30 +230,7 @@
         });
       }
 
-      const tables = document.getElementById('dash-tables');
-      if (tables) {
-        tables.innerHTML = ctx.standings.map((group) => miniTable(ctx, group)).join('');
-      }
-
-      const scorersEl = document.getElementById('dash-scorers');
-      if (scorersEl) {
-        const scorers = LAS.computeScorers(ctx.state).slice(0, 5);
-        scorersEl.innerHTML = '<section class="card">' +
-          '<div class="card-head"><div><span class="eyebrow">Goleadores</span><h3>Máximos artilleros</h3></div>' +
-          '<a class="text-link" href="#tabla">Ver más</a></div>' +
-          '<div class="scorer-list">' +
-            (scorers.length ? scorers.map((row, index) => {
-              const team = resolve(ctx, row.teamId);
-              return '<div class="scorer">' +
-                '<span class="scorer-rank">' + (index + 1) + '</span>' +
-                badge(team, 'badge--xs') +
-                '<span class="scorer-name">' + esc(row.name) + '<small>' + esc(team.name) + '</small></span>' +
-                '<span class="scorer-goals">' + row.goals + '<small>goles</small></span>' +
-              '</div>';
-            }).join('') : '<p class="muted">Todavía no hay goles. Simulá una fecha para estrenar la tabla.</p>') +
-          '</div>' +
-        '</section>';
-      }
+      /* Tablas y máximos artilleros eliminados del dashboard */
     } catch (error) {
       console.error('Error renderizando dashboard:', error);
     }

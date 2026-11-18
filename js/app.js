@@ -1076,6 +1076,8 @@
         case 'sim-remaining': simulateRemaining(); break;
         case 'go-playoffs': location.hash = '#playoffs'; break;
         case 'new-tournament': openNewTournament(); break;
+        case 'nueva-temporada': resetTournament(); break;
+        case 'cargar-temporada': triggerImport(); break;
         case 'export':
           LAS.storage.exportState(state);
           LAS.dom.toast('Partida exportada.', 'success');
