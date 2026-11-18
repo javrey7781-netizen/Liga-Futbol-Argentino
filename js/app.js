@@ -774,16 +774,19 @@
     }
   }
 
-  async function resetTournament() {
+  async function resetTournament(skipConfirm = false) {
     try {
       const tournament = LAS.getTournament(state.tournamentId);
-      const confirmed = await LAS.dom.confirmDialog({
-        title: 'Reiniciar torneo',
-        message: 'Se borrarán todos los resultados y playoffs de ' + tournament.fullName + '. Los equipos editados se mantienen.',
-        confirmLabel: 'Sí, reiniciar',
-        danger: true
-      });
-      if (!confirmed) return;
+      if (!skipConfirm) {
+        const confirmed = await LAS.dom.confirmDialog({
+          title: 'Reiniciar torneo',
+          message: 'Se borrarán todos los resultados y playoffs de ' + tournament.fullName + '. Los equipos editados se mantienen.',
+          confirmLabel: 'Sí, reiniciar',
+          cancelLabel: 'Cancelar',
+          danger: true
+        });
+        if (!confirmed) return;
+      }
 
       const overrides = state.teams;
       const theme = state.theme;
@@ -795,6 +798,29 @@
       LAS.dom.toast('Torneo reiniciado.', 'success');
     } catch (error) {
       console.error('Error reiniciando torneo:', error);
+    }
+  }
+
+  async function nuevaTemporada() {
+    try {
+      const tournament = LAS.getTournament(state.tournamentId);
+      const hasResults = Object.keys(state.results).length > 0;
+      const confirmed = await LAS.dom.confirmDialog({
+        title: 'Nueva temporada',
+        message: hasResults
+          ? 'Se borrarán todos los resultados y playoffs de ' + tournament.fullName + '. ¿Deseás continuar?'
+          : '¿Empezar una nueva temporada de ' + tournament.fullName + '?',
+        confirmLabel: 'Sí, empezar',
+        cancelLabel: 'Cancelar',
+        danger: hasResults
+      });
+      if (!confirmed) return;
+
+      location.hash = '#fixture';
+      await resetTournament(true);
+    } catch (error) {
+      console.error('Error en nueva temporada:', error);
+      LAS.dom.toast('Error al iniciar nueva temporada.', 'error');
     }
   }
 
@@ -1076,7 +1102,7 @@
         case 'sim-remaining': simulateRemaining(); break;
         case 'go-playoffs': location.hash = '#playoffs'; break;
         case 'new-tournament': openNewTournament(); break;
-        case 'nueva-temporada': resetTournament(); break;
+        case 'nueva-temporada': nuevaTemporada(); break;
         case 'cargar-temporada': triggerImport(); break;
         case 'export':
           LAS.storage.exportState(state);
