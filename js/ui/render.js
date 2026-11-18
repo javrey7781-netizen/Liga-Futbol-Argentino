@@ -188,18 +188,11 @@
       const dash = document.getElementById('dash-matches');
       if (!dash) return;
 
+      /* Portada limpia: solo se muestra contenido cuando hay campeón o playoffs */
       if (champion) {
-        const scorers = LAS.computeScorers(ctx.state);
-        const top = scorers.length ? scorers[0] : null;
         dash.innerHTML = '<section class="card">' +
           '<div class="card-head"><div><span class="eyebrow">Temporada ' + esc(ctx.tournament.season) + '</span><h3>Temporada finalizada</h3></div>' +
           '<span class="pill pill--gold">' + esc(champion.name) + '</span></div>' +
-          '<p class="muted">Se jugaron ' + regularMatches(ctx).length + ' partidos de fase regular y toda la fase final.</p>' +
-          '<div class="summary-grid">' +
-            '<div class="summary-item"><span>Campeón</span><b>' + esc(champion.name) + '</b></div>' +
-            '<div class="summary-item"><span>Goleador</span><b>' + (top ? esc(top.name) + ' (' + top.goals + ')' : '—') + '</b></div>' +
-            '<div class="summary-item"><span>Partidos totales</span><b>' + (regularMatches(ctx).length + countPlayoffMatches(ctx)) + '</b></div>' +
-          '</div>' +
           '<div class="card-cta">' +
             '<a class="btn btn-primary btn-sm" href="#playoffs">Ver playoffs</a>' +
             '<button type="button" class="btn btn-ghost btn-sm" data-action="new-tournament">Jugar otro torneo</button>' +
@@ -219,18 +212,9 @@
             esc(pendingRound.name.toLowerCase()) + '</button>'
         });
       } else {
-        const next = LAS.fixtures.nextRound(ctx.fixtures, ctx.state.results) || ctx.fixtures[ctx.fixtures.length - 1];
-        dash.innerHTML = matchCard(ctx, {
-          eyebrow: roundLabel(ctx) + ' ' + next.number + ' de ' + ctx.fixtures.length,
-          title: 'Partidos',
-          matches: next.matches,
-          showGroup: true,
-          actions: '<button type="button" class="btn btn-primary btn-sm" data-sim-round="' + next.number + '">Simular ' +
-            esc(roundLabel(ctx).toLowerCase()) + '</button>'
-        });
+        // Portada vacía: solo se muestran los botones del hero
+        dash.innerHTML = '';
       }
-
-      /* Tablas y máximos artilleros eliminados del dashboard */
     } catch (error) {
       console.error('Error renderizando dashboard:', error);
     }
