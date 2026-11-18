@@ -102,6 +102,18 @@
           teams: seasonTeams
         });
         LAS.storage.save(state);
+
+        // Recalcular tabla anual si hay historial guardado
+        const Apertura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-apertura-2026');
+        const Clausura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-clausura-2026');
+        const toRows2 = (teamsObj) => {
+          if (!teamsObj) return [];
+          return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
+        };
+        const semesters2 = [];
+        if (Apertura) semesters2.push({ season: 'Apertura', groups: [{ rows: toRows2(Apertura.teams) }] });
+        if (Clausura) semesters2.push({ season: 'Clausura', groups: [{ rows: toRows2(Clausura.teams) }] });
+        if (semesters2.length > 0) state.tableAnnual = LAS.standings.computeTableAnnual(semesters2);
       }
 
       LAS.storage.save(state);
@@ -157,18 +169,21 @@
           teams: seasonTeams
         });
 
-        // Acumular tabla anual si ya se jugaron ambos semestres
+        // Acumular tabla anual con los semestres disponibles (uno o dos)
         const Apertura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-apertura-2026');
         const Clausura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-clausura-2026');
-        if (Apertura && Clausura) {
-          const toRows = (teamsObj) => {
-            if (!teamsObj) return [];
-            return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
-          };
-          const semesters = [
-            { season: 'Apertura', groups: [{ rows: toRows(Apertura.teams) }] },
-            { season: 'Clausura', groups: [{ rows: toRows(Clausura.teams) }] }
-          ];
+        const toRows = (teamsObj) => {
+          if (!teamsObj) return [];
+          return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
+        };
+        const semesters = [];
+        if (Apertura) {
+          semesters.push({ season: 'Apertura', groups: [{ rows: toRows(Apertura.teams) }] });
+        }
+        if (Clausura) {
+          semesters.push({ season: 'Clausura', groups: [{ rows: toRows(Clausura.teams) }] });
+        }
+        if (semesters.length > 0) {
           state.tableAnnual = LAS.standings.computeTableAnnual(semesters);
         }
 
