@@ -40,6 +40,7 @@
       copaBracket: null,
       copaChampion: null,
       tableAnnual: [],
+      tableAnnualSemesters: 0,
       semesterChampions: {}
     };
   }
@@ -213,6 +214,7 @@
 
       if (semesters.length > 0) {
         state.tableAnnual = LAS.standings.computeTableAnnual(semesters);
+        state.tableAnnualSemesters = semesters.length;
       }
     } catch (error) {
       console.error('Error en recalcularTablaAnual:', error);

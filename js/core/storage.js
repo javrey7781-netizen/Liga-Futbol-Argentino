@@ -244,6 +244,7 @@
       copaBracket: data.copaBracket || null,
       copaChampion: data.copaChampion || null,
       tableAnnual: Array.isArray(data.tableAnnual) ? data.tableAnnual : [],
+      tableAnnualSemesters: Number(data.tableAnnualSemesters) || 0,
       semesterChampions: data.semesterChampions || {}
     };
   }
