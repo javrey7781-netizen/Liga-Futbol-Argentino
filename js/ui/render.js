@@ -675,7 +675,7 @@
         '</div>' +
 
         '<section class="card relegation-card" style="margin-top:22px">' +
-          '<div class="card-head"><div><span class="eyebrow">Tabla Anual Acumulada' + (hasTableAnnualData ? ' - ' + (tableAnnualSemesters >= 2 ? 'Final' : 'Parciales') : '') + '</span><h3>Posiciones del Año</h3></div>' +
+          '<div class="card-head"><div><span class="eyebrow">Tabla Anual Acumulada' + (tableAnnualSemesters >= 2 ? ' - Final' : tableAnnualSemesters === 1 ? ' - Parciales' : '') + '</span><h3>Posiciones del Año</h3></div>' +
           '<span class="pill">' + tableAnnual.length + ' equipos</span></div>' +
           '<div class="table-wrap"><table class="standings relegation-table">' +
           '<thead><tr><th>#</th><th>Equipo</th><th>Copas</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead>' +
