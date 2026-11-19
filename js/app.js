@@ -168,30 +168,58 @@
           tournamentId: state.tournamentId,
           teams: seasonTeams
         });
-
-        // Acumular tabla anual con los semestres disponibles (uno o dos)
-        const Apertura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-apertura-2026');
-        const Clausura = state.tournamentHistory.find((h) => h.tournamentId === 'liga-clausura-2026');
-        const toRows = (teamsObj) => {
-          if (!teamsObj) return [];
-          return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
-        };
-        const semesters = [];
-        if (Apertura) {
-          semesters.push({ season: 'Apertura', groups: [{ rows: toRows(Apertura.teams) }] });
-        }
-        if (Clausura) {
-          semesters.push({ season: 'Clausura', groups: [{ rows: toRows(Clausura.teams) }] });
-        }
-        if (semesters.length > 0) {
-          state.tableAnnual = LAS.standings.computeTableAnnual(semesters);
-        }
-
-        LAS.storage.save(state);
       }
+
+      // Siempre recalcular tabla anual con los datos disponibles (se actualiza fecha a fecha)
+      recalcularTablaAnual();
+
+      LAS.storage.save(state);
       refresh({ animate: animatedIds || [] });
     } catch (error) {
       console.error('Error en afterSimulation:', error);
+    }
+  }
+
+  function recalcularTablaAnual() {
+    const toRows = (teamsObj) => {
+      if (!teamsObj) return [];
+      return Object.entries(teamsObj).map(([id, t]) => Object.assign({ teamId: id }, t));
+    };
+
+    const semesters = [];
+
+    // Agregar semestres completados del historial
+    if (state.tournamentHistory) {
+      state.tournamentHistory.forEach((h) => {
+        semesters.push({ season: h.season || h.tournamentId, groups: [{ rows: toRows(h.teams) }] });
+      });
+    }
+
+    // Agregar el torneo actual si está en curso y no está en el historial
+    const currentTournamentId = state.tournamentId;
+    const isInHistory = state.tournamentHistory?.some((h) => h.tournamentId === currentTournamentId);
+    if (!isInHistory) {
+      const ctx = buildContext();
+      const currentTeams = {};
+      ctx.standings.forEach((group) => {
+        group.rows.forEach((row) => {
+          currentTeams[row.teamId] = {
+            pts: row.pts,
+            pj: row.pj,
+            dg: row.dg,
+            gf: row.gf,
+            gc: row.gc,
+            pg: row.pg,
+            pe: row.pe,
+            pp: row.pp
+          };
+        });
+      });
+      semesters.push({ season: currentTournamentId, groups: [{ rows: toRows(currentTeams) }] });
+    }
+
+    if (semesters.length > 0) {
+      state.tableAnnual = LAS.standings.computeTableAnnual(semesters);
     }
   }
 
