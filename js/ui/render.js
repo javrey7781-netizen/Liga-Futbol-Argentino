@@ -385,7 +385,7 @@
             '<span class="pill">' + group.played + '/' + group.total + ' partidos</span>' +
           '</div>' +
           '<div class="table-wrap"><table class="standings">' +
-          '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th><th>Últimos 5</th></tr></thead>' +
+          '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th><th>Últimos 5</th><th>Copas</th></tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
           '</table></div>' + legend +
         '</section>';
@@ -401,39 +401,14 @@
           '<td class="pts">' + row.goals + '</td>' +
         '</tr>';
       }).join('');
-      const annualTableData = ctx.state.tableAnnual || [];
-      const hasTableAnnualData = annualTableData.length > 0;
 
-      let annualRows = '';
-      if (hasTableAnnualData) {
-        annualRows = annualTableData.map((row, index) => {
-          const team = resolve(ctx, row.teamId);
-          return '<tr>' +
-            '<td class="pos">' + row.rank + '</td>' +
-            '<td><span class="team-inline">' + badge(team, 'badge--xs') + '<span>' + esc(team.name) + '</span></span></td>' +
-            '<td>' + row.pj + '</td>' +
-            '<td>' + row.pg + '</td>' +
-            '<td>' + row.pe + '</td>' +
-            '<td>' + row.pp + '</td>' +
-            '<td>' + row.gf + '</td>' +
-            '<td>' + row.gc + '</td>' +
-            '<td>' + (row.dg > 0 ? '+' : '') + row.dg + '</td>' +
-            '<td class="pts">' + row.pts + '</td>' +
-          '</tr>';
-        }).join('');
-      } else {
-        annualRows = '<tr><td colspan="11" class="muted-cell">Simulá partidos para ver la tabla anual acumulada.</td></tr>';
-      }
+      const cupsSection = cupsSectionHtml(ctx, cups);
+      const relegationSection = renderRelegationHtml(ctx, cups);
 
       container.innerHTML =
-        '<section class="card relegation-card">' +
-          '<div class="card-head"><div><span class="eyebrow">Tabla Anual Acumulada</span><h3>Posiciones del Año</h3></div>' +
-          '<span class="pill">' + annualTableData.length + ' equipos</span></div>' +
-          '<div class="table-wrap"><table class="standings relegation-table">' +
-          '<thead><tr><th>#</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead>' +
-          '<tbody>' + annualRows + '</tbody>' +
-          '</table></div>' +
-        '</section>' +
+        '<div class="standings-grid ' + (ctx.standings.length === 1 ? 'is-single' : '') + '">' + tables + '</div>' +
+        cupsSection +
+        relegationSection +
         '<section class="card scorers-card">' +
           '<div class="card-head"><div><span class="eyebrow">Goleadores</span><h3>Tabla de artilleros</h3></div>' +
           '<span class="pill">' + scorers.length + ' jugadores</span></div>' +
@@ -659,7 +634,7 @@
   /* ----------------------------- Equipos ---------------------------- */
   /* ---------------------------- Copa Argentina ---------------------------- */
   /* ---------------------------- Tabla Anual ---------------------------- */
-  function renderTableAntigua(ctx) {
+  function renderTableAnnual(ctx) {
     try {
       const container = document.getElementById('table-annual-content');
       if (!container) return;
@@ -743,7 +718,7 @@
 
         '<section class="card relegation-card" style="margin-top:22px">' +
           '<div class="card-head"><div><span class="eyebrow">Tabla Anual Acumulada</span><h3>Posiciones del Año</h3></div>' +
-          '<span class="pill">' + annualTableData.length + ' equipos</span></div>' +
+          '<span class="pill">' + tableAnnual.length + ' equipos</span></div>' +
           '<div class="table-wrap"><table class="standings relegation-table">' +
           '<thead><tr><th>#</th><th>Equipo</th><th>Copas</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DIF</th><th>PTS</th></tr></thead>' +
           '<tbody>' + allRows + '</tbody>' +
@@ -950,7 +925,7 @@
     renderStandings(ctx);
     renderPlayoffs(ctx);
     renderCopa(ctx);
-    renderStandings(ctx);
+    renderTableAnnual(ctx);
     renderTeams(ctx);
     renderFooter(ctx);
   }
