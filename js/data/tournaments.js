@@ -84,12 +84,12 @@
       fullName: name,
       season: '2026',
       country: 'Argentina',
-      description: '30 clubes en dos zonas (A y B) de 15 equipos. 14 fechas intra-zona + 1 fecha interzonal + 1 fecha de clásicos = 16 fechas. Clasifican los 8 mejores de cada zona a playoffs.',
+      description: '30 clubes en dos zonas (A y B) de 15 equipos. 15 fechas intra-zona + 1 fecha interzonal + 1 fecha de clásicos = 17 fechas. Clasifican los 8 mejores de cada zona a playoffs.',
       format: 'groups_playoffs',
       rounds: 'single',
       points: { win: 3, draw: 1, loss: 0 },
-      totalRounds: 16,
-      regularRounds: 14,
+      totalRounds: 17,
+      regularRounds: 15,
       groups: [
         { name: 'Zona A', teamIds: ZONA_A },
         { name: 'Zona B', teamIds: ZONA_B }
